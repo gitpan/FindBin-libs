@@ -1,16 +1,28 @@
-0.10 Mon Nov 24 16:06:22 CST 2003
 
-Initial release.
+1.00 Mon Mar 22 11:18:45 CST 2004
 
-0.11 Wed Nov 26 16:08:35 CST 2003
+- Up the version number. Thing seems stable enough to call it
+  1.00 at this point.
 
-- Fixed switch bug for handling print/noprint & verbose.
-- test.pl failed on Solaris due to /bin -> /usr/bin, test
-  changed to regex from eq.
+- Reverse the order of CHANGES, with most recent at the top.
 
-0.13 Wed Dec  3 10:12:13 CST 2003
+0.18 Tue Mar 16 22:22:02 CST 2004
 
-- pod for sandbox description.
+- Added -e test before abs_path to avoid nastygrams
+  from Cwd on abs_path of dangling links.
+
+0.17 Mon Mar  8 23:25:20 CST 2004
+
+- Removed leftover $DB::single (d'oh...)
+
+0.16 Sat Jan 24 14:52:23 CST 2004
+
+- Replaced 0 with undef for default print. noprint is
+  now the default.
+
+0.15 Sat Jan 24 14:46:22 CST 2004
+
+- POD
 
 0.14 Wed Dec  3 12:23:42 CST 2003
 
@@ -22,21 +34,16 @@ Initial release.
 - Included test for bogus directory (unless you DO have a 
   ./frobnicatorium) w/ exported array empty.
 
+0.13 Wed Dec  3 10:12:13 CST 2003
 
-0.15 Sat Jan 24 14:46:22 CST 2004
+- pod for sandbox description.
 
-- POD
+0.11 Wed Nov 26 16:08:35 CST 2003
 
-0.16 Sat Jan 24 14:52:23 CST 2004
+- Fixed switch bug for handling print/noprint & verbose.
+- test.pl failed on Solaris due to /bin -> /usr/bin, test
+  changed to regex from eq.
 
-- Replaced 0 with undef for default print. noprint is
-  now the default.
+0.10 Mon Nov 24 16:06:22 CST 2003
 
-0.17 Mon Mar  8 23:25:20 CST 2004
-
-- Removed leftover $DB::single (d'oh...)
-
-0.18 Tue Mar 16 22:22:02 CST 2004
-
-- Added -e test before abs_path to avoid nastygrams
-  from Cwd on abs_path of dangling links.
+Initial release.
