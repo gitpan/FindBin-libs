@@ -37,7 +37,7 @@ use Cwd qw( &abs_path );
 # package variables 
 ########################################################################
 
-our $VERSION = '0.12';
+our $VERSION = '1.00';
 
 my %defaultz = 
 (
@@ -313,6 +313,147 @@ a comma-separated list of directories to ignore:
 will replace the standard list and thus skip "/skip/this/lib"
 and "/and/this/also/lib". It will search "/lib" and "/usr/lib"
 since the argument ignore list replaces the original one.
+
+=head2 Homegrown Library Management 
+
+An all-too-common occurrance managing perly projects is
+being unable to install new modules becuse "it might 
+break things", and being unable to test them becuase
+you can't install them. The usual outcome of this is a 
+collection of hard-coded
+
+	use lib qw( /usr/local/projectX ... )
+
+code at the top of each #! file that has to be updated by
+hand for each new project.
+
+To get away from this you'll often see relative paths
+for the lib's, which require running the code from one
+specific place. All this does is push the hard-coding
+into cron, shell wrappers, and begin blocks.
+
+With FindBin::libs you need suffer no more.
+
+Automatically finding libraries in and above the executable
+means you can put your modules into cvs/svn and check them
+out with the project, have multiple copies shared by developers,
+or easily move a module up the directory tree in a testbed
+to regression test the module with existing code. All without
+having to modify a single line of code.
+
+=over 4
+
+=item Code-speicfic modules.
+
+Say your sandbox is in ./sandbox and you are currently
+working in ./sandbox/projects/package/bin on a perl
+executable. You may have some number of modules that
+are specific -- or customized -- for this pacakge, 
+share some modules within the project, and may want 
+to use company-wide modules that are managed out of 
+./sandbox in development. All of this lives under a 
+./qc tree on the test boxes and under ./production 
+on production servers.
+
+For simplicity, say that your sandbox lives in your
+home direcotry, /home/jowbloe, as a directory or a
+symlink.
+
+If your #! uses FindBin::libs in it then it will
+effectively
+
+	use lib
+	qw(
+		/home/sandbox/lib
+		/home/sandbox/project/lib
+		/home/sandbox/project/package/lib
+	);
+
+if you run /home/sandbox/project/package/bin/foobar. This
+will happen the same way if you use a relative or absolute
+path, perl -d the thing, or if any of the lib directories
+are symlinks outside of your sandbox.
+
+This means that the most specific module directories
+("closest" to your executable) will be picked up first.
+
+If you have a version of Frobnicate.pm in your ./package/lib
+for modifications fine: you'll use it before the one in 
+./project or ./sandbox. 
+
+=item Regression Testing
+
+Everntually, however, you'll need to regression test 
+Frobnicate.pm with other modules. 
+
+Fine: move, copy, or symlink it into ./project/lib and
+you can merrily run ./project/*/bin/* with it and see 
+if there are any problems. In fact, so can the nice 
+folks in QC. 
+
+If you want to install and test a new module just 
+prefix it into, say, ./sandbox/lib and all the code
+that has FindBin::libs will simply use it first. 
+
+=item Testing with Symlinks
+
+$FindBin::Bin is relative to where an executable is started from.
+This allows a symlink to change the location of directories used
+by FindBin::libs. Full regression testing of an executable can be
+accomplished with a symlink:
+
+	./sandbox
+		./lib -> /homegrown/dir/lib
+		./lib/What/Ever.pm
+
+		./pre-change
+			./bin/foobar
+
+		./post-change
+			./lib/What/Ever.pm
+			./bin/foobar -> ../../pre-last-change/bin/foobar
+
+Running foobar symlinked into the post-change directory will
+test it with whatever collection of modules is in the post-change
+directory. A large regression test on some collection of 
+changed modules can be performed with a few symlinks into a 
+sandbox area.
+
+=item Managing Configuration and Meta-data Files
+
+The "base" option alters FindBin::libs standard base directory.
+This allows for a heirarchical set of metadata directories:
+
+	./sandbox
+		./meta
+		./project/
+			./meta
+
+		./project/package
+			./bin
+			./meta
+
+with
+
+	use FindBin::libs qw( base=meta export );
+
+	sub read_meta
+	{
+		my $base = shift;
+
+		for my $dir ( @meta )
+		{
+			# open the first one and return
+			...
+		}
+
+		# caller gets back empty list if nothing was read.
+
+		()
+	}
+
+=back
+
 
 
 =head1 BUGS
