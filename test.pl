@@ -10,8 +10,10 @@ $, = "\n\t";
 # export @binz after looking for */bin, override the 
 #  "ignore" to search /bin, /usr/bin.
 
-use FindBin::libs qw( noprint export );
-use FindBin::libs qw( print export=found base=blib );
+BEGIN{ $FindBin::libs::verbose = 1 }
+
+use FindBin::libs qw( print export );
+use FindBin::libs qw( noprint export=found base=blib );
 use FindBin::libs qw( print export=binz base=bin ignore=foo,bar );
 
 use Test::Simple tests => 6;

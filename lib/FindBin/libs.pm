@@ -37,7 +37,7 @@ use Cwd qw( &abs_path );
 # package variables 
 ########################################################################
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 my %defaultz = 
 (
@@ -51,6 +51,8 @@ my %defaultz =
 
 	ignore => '/ /usr',
 );
+
+our $verbose = 0;
 
 ########################################################################
 # subroutines
@@ -105,9 +107,9 @@ sub import
 
 	# syntatic sugar, minor speedup.
 
-	my $verbose = defined $argz{verbose};
-
 	my $base = $argz{base};
+
+	my $verbose = defined $argz{verbose};
 
 	# now locate the libraries.
 	#
@@ -154,7 +156,7 @@ sub import
 
 	# print the dir's found if asked to, then do the deeds.
 
-	if( defined $argz{verbose} || defined $argz{print} )
+	if( $verbose || defined $argz{print} )
 	{
 		local $\ = "\n";
 		local $, = "\n\t";
@@ -162,7 +164,7 @@ sub import
 		print STDERR "Found */$base:", @libs
 	}
 
-	if( $argz{export} )
+	if( defined $argz{export} )
 	{
 		my $caller = caller;
 
@@ -174,7 +176,7 @@ sub import
 		*{ $caller . '::' . $argz{export} } = \@libs
 	}
 
-	if( $argz{use} )
+	if( defined $argz{use} )
 	{
 		my @code = 
 		qw(
