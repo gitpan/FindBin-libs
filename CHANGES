@@ -2,9 +2,12 @@
 
 Initial release.
 
-0.11, 0.12 Wed Nov 26 16:51:09 CST 2003
+0.11 Wed Nov 26 16:08:35 CST 2003
 
-- Cleaned up verbose handling.
+- Fixed switch bug for handling print/noprint & verbose.
+- test.pl failed on Solaris due to /bin -> /usr/bin, test
+  changed to regex from eq.
 
-- Modified test.pl to handle Solaris /bin -> /usr/bin
-  via eq to regex.
+0.13 Wed Dec  3 10:12:13 CST 2003
+
+- pod for sandbox description.
