@@ -37,19 +37,19 @@ use Cwd qw( &abs_path );
 # package variables 
 ########################################################################
 
-our $VERSION = '1.00';
+our $VERSION = '0.12';
 
 my %defaultz = 
 (
 	base    => 'lib',
 	use     => 1,
 
-	ignore => '/ /usr',
-
 	export	=> undef,
 	verbose => undef,
 
-	print   => undef,
+	print   => 0,
+
+	ignore => [ qw( / /usr ) ],
 );
 
 ########################################################################
@@ -92,9 +92,6 @@ sub import
 	#
 	# if $argz{export} is defined but false then it takes
 	# its default from $argz{base}.
-	#
-	# the croak is worthwhile since this may have been
-	# use-ed more than once.
 
 	exists $argz{$_} or $argz{$_} = $defaultz{$_}
 		for keys %defaultz;
@@ -104,9 +101,8 @@ sub import
 
 	defined $argz{export} and $argz{export} ||= $argz{base};
 
-	$argz{ignore} = [ split /,/, $argz{ignore} ];
-
-	# syntatic sugar, minor speedup.
+	$argz{ignore} = [ split /\s*,\s*/, $argz{ignore} ]
+		unless ref $argz{ignore};
 
 	my $verbose = defined $argz{verbose};
 
@@ -148,16 +144,9 @@ sub import
 		{
 			$dir .= "/$_";
 
-			# -e avoid nastygrams from abs_path handling
-			# dangling symlinks.
+			my $lib = abs_path "$dir/$base";
 
-			my $lib = "$dir/$base";
-
-			$lib = -e $lib ? abs_path $lib : '';
-
-			$lib &&
-			! $found{$lib} &&
-			-d $lib ?
+			defined $lib && ! $found{$lib} && -d $lib ?
 				($found{$lib}=$lib) : ()
 		}
 		split '/', $Bin
@@ -216,7 +205,7 @@ __END__
 
 =head1 NAME
 
-FindBin::libs - Locate and use lib directories above $FindBin::Bin
+FindBin::libs
 
 =head1 SYNOPSIS
 
@@ -247,8 +236,8 @@ FindBin::libs - Locate and use lib directories above $FindBin::Bin
 
 	# "export" defaults to "nouse", these two are identical:
 
-	use FindBin::libs qw( export       );
 	use FindBin::libs qw( export nouse );
+	use FindBin::libs qw( export       );
 
 	# use and export are not exclusive:
 
@@ -325,120 +314,11 @@ will replace the standard list and thus skip "/skip/this/lib"
 and "/and/this/also/lib". It will search "/lib" and "/usr/lib"
 since the argument ignore list replaces the original one.
 
-=head2 Using FindBin::libs
-
-One common problem in Perl sites is SysAdmin's unwillingness 
-to even upgrade modules that come with perl, let alone install
-new ones. Because the Perl distributions are frequently compiled
-by vendors, updating the default @INC to add a location for 
-homegrown modules is not an option. Common results are out-of-date
-modules and 'use lib' with hard-coded paths for the homegrown or
-post-install updates of libraries.
-
-With FindBin::libs a set of homegrown or upgraded libraries can
-be placed where convienent and symlinked or placed into sandbox 
-and production directories as necessary. Because the "use lib" 
-paths are not hard coded the executables can automically use 
-the correct libraries.
-
-There is a similar problem in having to hard-code the location of
-common metadata files.
-
-This modules works best if programmers work in a CVS-style
-sandbox directory with links to the shared module and metadata 
-directories:
-
-	./sandbox/
-		./sandbox/lib -> /homegrown/dir/lib
-		./sandbox/meta -> /homegrown/dir/meta
-		./project/lib
-		./project/meta
-		./project/package/lib
-		./project/package/meta
-		./project/package/bin/shebang_file
-
-The QA and production environments would probably replace the
-symlinks with directories in a more secure space.
-
-=item Homegrown Library Management
-
-If shebang_file has a "use FindBin::libs" in it then it will
-effectively
-
-	use lib qw( ./project/package/lib ./project/lib ./sandbox/lib )
-
-(i.e., the most specific module directories will be picked up 
-first). Now a developer can work on copies of a module specific 
-to one package in ./project/package/lib, test it with everything
-on a project by simply moving it up to ./project/lib. Once a 
-module has been tested it can be placed in the main homgrown 
-library and extra copies in the package or project removed.
-
-=item Regression Testing
-
-$FindBin::Bin is relative to where an executable is started from.
-This allows a symlink to change the location of directories used
-by FindBin::libs. Full regression testing of an executable can be
-accomplished with a symlink:
-
-	./sandbox
-		./lib -> /homegrown/dir/lib
-		./lib/What/Ever.pm
-
-		./pre-change
-			./bin/foobar
-
-		./post-change
-			./lib/What/Ever.pm
-			./bin/foobar -> ../../pre-last-change/bin/foobar
-
-Running foobar symlinked into the post-change directory will
-test it with whatever collection of modules is in the post-change
-directory. A large regression test on some collection of 
-changed modules can be performed with a few symlinks into a 
-sandbox area.
-
-=item Managing Configuration and Meta-data Files
-
-The "base" option alters FindBin::libs standard base directory.
-This allows for a heirarchical set of metadata directories:
-
-	./sandbox
-		./meta
-		./project/
-			./meta
-
-		./project/package
-			./bin
-			./meta
-
-with
-
-	use FindBin::libs qw( base=meta export );
-
-	sub read_meta
-	{
-		my $base = shift;
-
-		for my $dir ( @meta )
-		{
-			# open the first one and return
-			...
-		}
-
-		# caller gets back empty list if nothing was read.
-
-		()
-	}
-
-
 
 =head1 BUGS
 
-Feature: FindBin::libs does not use File::Spec and depends on
-the use of '/' as a directory separator. This restricts it to
-*NIX directory paths (including OS/X and cygwin); the module
-will fail on Windows, DOS, and VMS (that I can think of).
+Doesn't use File::Spec and depends on splitting $Bin on '/' to
+get subdirectories. Tested on *NIX, should run on OS/X, Cygwin. 
 
 
 =head1 AUTHOR
@@ -447,5 +327,5 @@ Steven Lembark, Workhorse Computing <lembark@wrkhors.com>
 
 =head1 COPYRIGHT
 
-This code is released under the same terms as Perl-5.8.1 or 
-any later version of Perl.
+This code is released under the same terms as Perl-5.8.1 itself,
+or any later version of Perl the user prefers.

@@ -14,10 +14,12 @@ $, = "\n\t";
 #
 # shouldn't print the output for "lib" or "blib", should print
 # the resuilt for binz, junk.
+#
+# eval necessary for crippled O/S w/ missing/broken symlinks.
 
 BEGIN
 {
-	symlink '/nonexistant/foobar', './foobar';
+	eval { symlink qw( /nonexistant/path/to/foobar ./foobar ) }
 }
 
 use FindBin::libs qw( export );
@@ -38,6 +40,8 @@ ok( $lib[0]   eq "$FindBin::Bin/lib",	'Found lib' );
 ok( $found[0] eq "$FindBin::Bin/blib",	'Found blib' );
 ok( $binz[-1] =~ m{/bin$},            	'Found */bin' );
 
-eval { unlink './foobar' };
+# clean up temp files on the way out.
+
+eval { -e and unlink } for qw( ./foobar );
 
 exit 0;

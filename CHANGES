@@ -1,4 +1,24 @@
 
+1.01 Mon May 31 21:13:13 CDT 2004
+
+- Modify the split for ignored arguments to ignore whitespace
+  around the comma separators. This only applies to cases where
+  the caller doesn't use qw() for the arguments and ends up 
+  with something like: 'ignore=/, /foo'.
+
+- Repair default arg's to successfully ignore '/' and
+  '/usr' by default.
+
+- Eval symlink creation to handle systems without symlinks.
+
+  Caveat utilitor: this module has only been tested by me on
+  *NIX, the assumed directory separation on '/' is most
+  likely broken on ms-dos, VMS, or related filesystems. If
+  any currently available *NIX lacks symlinks please warn
+  me, otherwise YMMV.
+
+- Cleaned up some comments.
+
 1.00 Mon Mar 22 11:18:45 CST 2004
 
 - Up the version number. Thing seems stable enough to call it
