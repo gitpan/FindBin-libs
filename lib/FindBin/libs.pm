@@ -37,7 +37,7 @@ use Cwd qw( &abs_path );
 # package variables 
 ########################################################################
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 my %defaultz = 
 (
@@ -58,8 +58,6 @@ my %defaultz =
 
 sub import
 {
-	$DB::single = 1;
-
 	# deal with the use arguments.
 
 	my $module = shift;
@@ -72,9 +70,14 @@ sub import
 		{
 			my ( $k, $v ) = split '=', $_, 2;
 
-			$v = undef if $k =~ s{^(?:!|no)}{};
-
-			$k => ( $v || '' )
+			if( $k =~ s{^(?:!|no)}{} )
+			{
+				$k => undef
+			}
+			else
+			{
+				$k => ( $v || '' )
+			}
 		}
 		@_
 	;
@@ -99,8 +102,6 @@ sub import
 	defined $argz{export} and $argz{export} ||= $argz{base};
 
 	$argz{ignore} = [ split /,/, $argz{ignore} ];
-
-	$argz{print} ||= defined $argz{verbose};
 
 	# syntatic sugar, minor speedup.
 
@@ -153,7 +154,7 @@ sub import
 
 	# print the dir's found if asked to, then do the deeds.
 
-	if( $argz{print} )
+	if( defined $argz{verbose} || defined $argz{print} )
 	{
 		local $\ = "\n";
 		local $, = "\n\t";
