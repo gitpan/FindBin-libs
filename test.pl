@@ -2,6 +2,9 @@
 
 package Testophile;
 
+use strict;
+use warnings;
+
 $\ = "\n";
 $, = "\n\t";
 
@@ -13,15 +16,17 @@ $, = "\n\t";
 use FindBin::libs qw( noprint export );
 use FindBin::libs qw( print export=found base=blib );
 use FindBin::libs qw( print export=binz base=bin ignore=foo,bar );
+use FindBin::libs qw( print export=junk base=frobnicatorium );
 
-use Test::Simple tests => 6;
+use Test::Simple tests => 7;
 
-ok( @lib,   '@lib exported' );
-ok( @found, '@found exported' );
-ok( @binz,  '@binz exported' );
+ok( @lib,     '@lib exported'   );
+ok( @found,   '@found exported' );
+ok( @binz,    '@binz exported'  );
+ok( ! @junk,  'empty @junk exported'  );
 
-ok( $lib[0]   eq "$FindBin::Bin/lib", "Found $FindBin::Bin/lib" );
-ok( $found[0] eq "$FindBin::Bin/blib","Found $FindBin::Bin/blib" );
-ok( $binz[-1] =~ m{/bin$},             "Found */bin" );
+ok( $lib[0]   eq "$FindBin::Bin/lib",	'Found lib' );
+ok( $found[0] eq "$FindBin::Bin/blib",	'Found blib' );
+ok( $binz[-1] =~ m{/bin$},            	'Found */bin' );
 
 exit 0;

@@ -11,3 +11,13 @@ Initial release.
 0.13 Wed Dec  3 10:12:13 CST 2003
 
 - pod for sandbox description.
+
+0.14 Wed Dec  3 12:23:42 CST 2003
+
+- Modify Makefile.PL to use ABSTRACT_FROM, NAME entry of POD to 
+  add abstract.
+
+- Added notes to README.
+
+- Included test for bogus directory (unless you DO have a 
+  ./frobnicatorium) w/ exported array empty.

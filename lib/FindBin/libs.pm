@@ -37,7 +37,7 @@ use Cwd qw( &abs_path );
 # package variables 
 ########################################################################
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 my %defaultz = 
 (
@@ -88,10 +88,13 @@ sub import
 	exists $argz{use} or $defaultz{use} = ! exists $argz{export};
 
 	# now apply the defaults, then sanity check the result.
-	# base is a special case since it always has to exists.
+	# base is a special case since it always has to exist.
 	#
 	# if $argz{export} is defined but false then it takes
 	# its default from $argz{base}.
+	#
+	# the croak is worthwhile since this may have been
+	# use-ed more than once.
 
 	exists $argz{$_} or $argz{$_} = $defaultz{$_}
 		for keys %defaultz;
@@ -205,7 +208,7 @@ __END__
 
 =head1 NAME
 
-FindBin::libs
+FindBin::libs - Locate and use lib directories above $FindBin::Bin
 
 =head1 SYNOPSIS
 
@@ -236,8 +239,8 @@ FindBin::libs
 
 	# "export" defaults to "nouse", these two are identical:
 
-	use FindBin::libs qw( export nouse );
 	use FindBin::libs qw( export       );
+	use FindBin::libs qw( export nouse );
 
 	# use and export are not exclusive:
 
@@ -424,8 +427,10 @@ with
 
 =head1 BUGS
 
-Doesn't use File::Spec and depends on splitting $Bin on '/' to
-get subdirectories. Tested on *NIX, should run on OS/X, Cygwin. 
+Feature: FindBin::libs does not use File::Spec and depends on
+the use of '/' as a directory separator. This restricts it to
+*NIX directory paths (including OS/X and cygwin); the module
+will fail on Windows, DOS, and VMS (that I can think of).
 
 
 =head1 AUTHOR

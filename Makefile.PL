@@ -3,11 +3,12 @@ use ExtUtils::MakeMaker;
 WriteMakefile
 (
 	NAME            => 'FindBin::libs',
-	VERSION_FROM    => 'lib/FindBin/libs.pm',
-	ABSTRACT        => 'Search $FindBin::Bin for ./lib dirs and use them',
+	VERSION         => '0.15',
+	ABSTRACT_FROM	=> 'lib/FindBin/libs.pm',
 	PREREQ_PM =>
 	{
-		# standard distros
+		# standard distro, particular versions 
+		# are unlikely to cause pain.
 
 		strict       => 0,
 		warnings     => 0,
