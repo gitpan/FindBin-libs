@@ -11,9 +11,12 @@ $, = "\n\t";
 # export @found after looking for */blib
 # export @binz after looking for */bin, override the 
 #  "ignore" to search /bin, /usr/bin.
+#
+# shouldn't print the output for "lib" or "blib", should print
+# the resuilt for binz, junk.
 
-use FindBin::libs qw( noprint export );
-use FindBin::libs qw( export=found base=blib );
+use FindBin::libs qw( export );
+use FindBin::libs qw( noprint export=found base=blib );
 use FindBin::libs qw( print export=binz base=bin ignore=foo,bar );
 use FindBin::libs qw( print export=junk base=frobnicatorium );
 

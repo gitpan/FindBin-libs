@@ -157,8 +157,6 @@ sub import
 
 	# print the dir's found if asked to, then do the deeds.
 
-$DB::single = 1;
-
 	if( $verbose || defined $argz{print} )
 	{
 		local $\ = "\n";
