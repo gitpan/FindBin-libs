@@ -1,0 +1,7 @@
+MANIFEST
+README
+CHANGES
+Makefile.PL
+lib/FindBin/libs.pm
+test.pl
+META.yml                                 Module meta-data (added by MakeMaker)
