@@ -1,3 +1,8 @@
+1.05 Thu Nov  4 17:35:31 EST 2004
+
+- Wrap abs_path in an eval to handle systems that die on
+  non-existant directories.
+
 1.03 Wed Oct 20 12:03:30 EDT 2004
 
 - Fix doc bug -- added /jowbloe/ below /home on the 

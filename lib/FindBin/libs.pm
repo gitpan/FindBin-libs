@@ -116,7 +116,7 @@ sub import
 	my %found =
 		map
 		{
-			(-d "$_/$base") ? (abs_path("$_/$base") => 1) : ()
+			(-d "$_/$base") ? (eval{abs_path("$_/$base")} => 1) : ()
 		}
 		@{ $argz{ignore} }
 	;
@@ -144,7 +144,7 @@ sub import
 		{
 			$dir .= "/$_";
 
-			my $lib = abs_path "$dir/$base";
+			my $lib = eval { abs_path "$dir/$base" };
 
 			defined $lib && ! $found{$lib} && -d $lib ?
 				($found{$lib}=$lib) : ()
