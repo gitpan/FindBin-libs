@@ -364,15 +364,15 @@ effectively
 
 	use lib
 	qw(
-		/home/sandbox/lib
-		/home/sandbox/project/lib
-		/home/sandbox/project/package/lib
+		/home/jowbloe/sandbox/lib
+		/home/jowbloe/sandbox/project/lib
+		/home/jowbloe/sandbox/project/package/lib
 	);
 
-if you run /home/sandbox/project/package/bin/foobar. This
-will happen the same way if you use a relative or absolute
-path, perl -d the thing, or if any of the lib directories
-are symlinks outside of your sandbox.
+if you run /home/jowbloe/sandbox/project/package/bin/foobar.
+This will happen the same way if you use a relative or
+absolute path, perl -d the thing, or if any of the lib
+directories are symlinks outside of your sandbox.
 
 This means that the most specific module directories
 ("closest" to your executable) will be picked up first.
