@@ -21,3 +21,13 @@ Initial release.
 
 - Included test for bogus directory (unless you DO have a 
   ./frobnicatorium) w/ exported array empty.
+
+
+0.15 Sat Jan 24 14:46:22 CST 2004
+
+- POD
+
+0.16 Sat Jan 24 14:52:23 CST 2004
+
+- Replaced 0 with undef for default print. noprint is
+  now the default.

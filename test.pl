@@ -3,7 +3,6 @@
 package Testophile;
 
 use strict;
-use warnings;
 
 $\ = "\n";
 $, = "\n\t";
@@ -14,7 +13,7 @@ $, = "\n\t";
 #  "ignore" to search /bin, /usr/bin.
 
 use FindBin::libs qw( noprint export );
-use FindBin::libs qw( print export=found base=blib );
+use FindBin::libs qw( export=found base=blib );
 use FindBin::libs qw( print export=binz base=bin ignore=foo,bar );
 use FindBin::libs qw( print export=junk base=frobnicatorium );
 

@@ -47,7 +47,7 @@ my %defaultz =
 	export	=> undef,
 	verbose => undef,
 
-	print   => 0,
+	print   => undef,
 
 	ignore => '/ /usr',
 );
@@ -156,6 +156,8 @@ sub import
 	;
 
 	# print the dir's found if asked to, then do the deeds.
+
+$DB::single = 1;
 
 	if( $verbose || defined $argz{print} )
 	{
