@@ -35,3 +35,8 @@ Initial release.
 0.17 Mon Mar  8 23:25:20 CST 2004
 
 - Removed leftover $DB::single (d'oh...)
+
+0.18 Tue Mar 16 22:22:02 CST 2004
+
+- Added -e test before abs_path to avoid nastygrams
+  from Cwd on abs_path of dangling links.

@@ -44,12 +44,12 @@ my %defaultz =
 	base    => 'lib',
 	use     => 1,
 
+	ignore => '/ /usr',
+
 	export	=> undef,
 	verbose => undef,
 
 	print   => undef,
-
-	ignore => '/ /usr',
 );
 
 ########################################################################
@@ -148,9 +148,17 @@ sub import
 		{
 			$dir .= "/$_";
 
-			my $lib = abs_path "$dir/$base";
+			# -e avoid nastygrams from abs_path handling
+			# dangling symlinks.
 
-			! $found{$lib} && -d $lib ? ($found{$lib}=$lib) : ();
+			my $lib = "$dir/$base";
+
+			$lib = -e $lib ? abs_path $lib : '';
+
+			$lib &&
+			! $found{$lib} &&
+			-d $lib ?
+				($found{$lib}=$lib) : ()
 		}
 		split '/', $Bin
 	;
