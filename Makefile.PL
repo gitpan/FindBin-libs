@@ -3,7 +3,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile
 (
 	NAME            => 'FindBin::libs',
-	VERSION         => '1.05',
+	VERSION         => '1.06',
 	ABSTRACT_FROM	=> 'lib/FindBin/libs.pm',
 	PREREQ_PM =>
 	{

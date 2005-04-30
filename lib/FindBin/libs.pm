@@ -47,7 +47,7 @@ my %defaultz =
 	export	=> undef,
 	verbose => undef,
 
-	print   => 0,
+	print   => undef,
 
 	ignore => [ qw( / /usr ) ],
 );

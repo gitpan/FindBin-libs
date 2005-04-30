@@ -22,11 +22,11 @@ BEGIN
 	eval { symlink qw( /nonexistant/path/to/foobar ./foobar ) }
 }
 
-use FindBin::libs qw( export );
-use FindBin::libs qw( noprint export=found base=blib );
-use FindBin::libs qw( print export=binz base=bin ignore=foo,bar );
-use FindBin::libs qw( print export=junk base=frobnicatorium );
-use FindBin::libs qw( export base=foobar );
+use FindBin::libs qw( verbose export );
+use FindBin::libs qw( verbose noprint export=found base=blib );
+use FindBin::libs qw( verbose print export=binz base=bin ignore=foo,bar );
+use FindBin::libs qw( verbose print export=junk base=frobnicatorium );
+use FindBin::libs qw( verbose export base=foobar );
 
 use Test::Simple tests => 8;
 

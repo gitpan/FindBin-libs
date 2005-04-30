@@ -1,3 +1,8 @@
+1.06 Sat Apr 30 00:24:23 EDT 2005
+
+- Set print to undef -- should've been that way
+  to begin with.
+
 1.05 Thu Nov  4 17:35:31 EST 2004
 
 - Wrap abs_path in an eval to handle systems that die on
