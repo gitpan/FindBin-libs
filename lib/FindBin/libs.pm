@@ -29,15 +29,20 @@ use warnings;
 
 use Carp qw( &croak );
 
+use Cwd qw( &abs_path );
+
 use FindBin qw( $Bin );
 
-use Cwd qw( &abs_path );
+# for some reason, RH Enterprise V/4 has a trailing '/'; I havn't
+# seen another copy of FindBin that does this. fix is quick enough...
+
+$FindBin::Bin =~ s{/$}{};
 
 ########################################################################
 # package variables 
 ########################################################################
 
-our $VERSION = '1.00';
+our $VERSION = '1.01';
 
 my %defaultz = 
 (
@@ -46,6 +51,7 @@ my %defaultz =
 
 	export	=> undef,
 	verbose => undef,
+    debug   => undef,
 
 	print   => undef,
 
@@ -81,6 +87,10 @@ sub import
 		}
 		@_
 	;
+
+    # stuff "debug=1" into your arguments and perl -d will stop here.
+
+    $DB::single = 1 if $argz{debug};
 
 	# use defaults to false if export is an argument and use is not
 	# (or nouse is specified).
@@ -205,7 +215,8 @@ __END__
 
 =head1 NAME
 
-FindBin::libs
+FindBin::libs - Locate and 'use lib' directories along
+the path of $FindBin::Bin to automate locating modules.
 
 =head1 SYNOPSIS
 
@@ -244,6 +255,11 @@ FindBin::libs
 	use FindBin::libs qw( use export );           # do both
 	use FindBin::libs qw( nouse noexport print ); # print only
 	use FindBin::libs qw( nouse noexport );       # do nothting at all
+
+    # turn on a breakpoint after the args are prcoessed, before
+    # any search/export/use lib is handled.
+
+    use FindBin::libs qw( debug=1 );
 
 =head1 DESCRIPTION
 
@@ -455,11 +471,22 @@ with
 =back
 
 
+=head1 See Also
+
+NEXT::init can be combined with FB::l to manage data 
+inheritence.
 
 =head1 BUGS
 
 Doesn't use File::Spec and depends on splitting $Bin on '/' to
 get subdirectories. Tested on *NIX, should run on OS/X, Cygwin. 
+
+Note: File::Spec::rel2abs and abs_path work differently:
+abs_path only returns true for existing directories and 
+resolves symlinks; rel2abs simply removes double-dot 
+directories from the path. I've used abs_path here to 
+avoid double-including symlinked directories and avoid 
+using directories that don't exist. 
 
 
 =head1 AUTHOR

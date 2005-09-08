@@ -1,3 +1,13 @@
+1.07 Thu Sep  8 09:33:29 EDT 2005
+
+- RedHat Enterprise Version 4 has a bug that leaves $FindBin::Bin
+  with a trailing slash. Fix is to regex it off before using the
+  variable.
+
+- Added "debug" argument to set $DB::single = 1 after processing
+  the arguments; saves having to hack the code to test where the 
+  things come from.
+
 1.06 Sat Apr 30 00:24:23 EDT 2005
 
 - Set print to undef -- should've been that way
