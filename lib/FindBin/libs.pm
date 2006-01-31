@@ -11,7 +11,7 @@
 # variable to export.
 #
 # Copyright (C) 2003, Steven Lembark, Workhorse Computing.
-# This code is released under the same terms as Perl-5.8.1
+# This code is released under the same terms as Perl-5.6.1
 # or any later version of Perl.
 # 
 ########################################################################
@@ -29,20 +29,51 @@ use warnings;
 
 use Carp qw( &croak );
 
-use Cwd qw( &abs_path );
+use FindBin;
 
-use FindBin qw( $Bin );
+use Symbol;
 
-# for some reason, RH Enterprise V/4 has a trailing '/'; I havn't
-# seen another copy of FindBin that does this. fix is quick enough...
+# both of these are in the standard distro and 
+# should be available.
 
-$FindBin::Bin =~ s{/$}{};
+use File::Spec::Functions
+qw
+(
+    &splitpath
+    &splitdir
+    &catpath
+    &catdir
+);
+
+BEGIN
+{
+    # however... there have been complains of 
+    # places where abs_path does not work. 
+    #
+    # if abs_path fails on the working directory
+    # then replace it with rel2abs and live with 
+    # possibly slower, redundant directories.
+
+    use Cwd qw( &abs_path &cwd );
+
+    unless( eval { abs_path cwd } )
+    {
+        # abs_path seems to be having problems,
+        # fix is to stub it out.
+
+        my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
+
+        undef &{ $ref };
+
+        *$ref = sub{ $_[0] };
+    };
+}
 
 ########################################################################
 # package variables 
 ########################################################################
 
-our $VERSION = '1.01';
+our $VERSION = '1.20';
 
 my %defaultz = 
 (
@@ -55,23 +86,87 @@ my %defaultz =
 
 	print   => undef,
 
-	ignore => [ qw( / /usr ) ],
+	ignore => '/,/usr',
 );
+
+# only new directories are used, ignore pre-loads
+# this with unwanted values.
+
+my %found = ();
+
+# saves passing this between import and $handle_args.
+
+my %argz = ();
+
+my $verbose = 0;
 
 ########################################################################
 # subroutines
 ########################################################################
 
-sub import
+sub find_libs
 {
-	# deal with the use arguments.
+    my $base = shift || $argz{ base };
 
-	my $module = shift;
+    # for some reason, RH Enterprise V/4 has a 
+    # trailing '/'; I havn't seen another copy of 
+    # FindBin that does this. fix is quick enough: 
+    # strip the trailing '/'.
+    #
+    # using a regex to extract the value untaints it.
+    # after that split path can grab the directory 
+    # portion for future use.
+
+    my ( $Bin ) = $FindBin::Bin =~ m{^(.+)/?$};
+
+	print STDERR "\nSearching $Bin for '$base'...\n"
+		if $verbose;
+
+    my( $vol, $bin ) = splitpath $Bin, 1;
+
+    my @bin = splitdir $bin;
+
+	my @libz = ();
+
+    for( 1 .. @bin )
+    {
+        
+        my $abs
+        = abs_path ( catpath $vol, ( catdir @bin, $base ) );
+
+        if( $abs && -d $abs && ! exists $found{ $abs } )
+        {
+            $found{ $abs } = 1;
+
+            push @libz, $abs;
+        }
+
+        pop @bin
+    }
+
+    # caller gets back the existing lib paths 
+    # (including volume) walking up the path 
+    # from $FindBin::Bin -> root.
+    #
+    # passing it back as a list isn't all that
+    # painful for a few paths.
+
+    wantarray ? @libz : \@libz
+};
+
+# break out the messy part into a separate block.
+
+my $handle_args 
+= sub
+{
+	# discard the module, rest are arguments.
+
+	shift;
 
 	# anything after the module are options with arguments
 	# assigned via '='.
 
-	my %argz = 
+	%argz = 
 		map
 		{
 			my ( $k, $v ) = split '=', $_, 2;
@@ -104,17 +199,21 @@ sub import
 	# its default from $argz{base}.
 
 	exists $argz{$_} or $argz{$_} = $defaultz{$_}
-		for keys %defaultz;
+    for keys %defaultz;
 
 	exists $argz{base} && $argz{base} 
-		or croak "Bogus FindBin::libs: missing base argument, should be 'base=NAME'";
+    or croak "Bogus FindBin::libs: missing/false base argument, should be 'base=NAME'";
 
 	defined $argz{export} and $argz{export} ||= $argz{base};
 
-	$argz{ignore} = [ split /\s*,\s*/, $argz{ignore} ]
-		unless ref $argz{ignore};
+	$argz{ ignore } =
+    [
+        grep { $_ }
+        split /\s*,\s*/,
+        $argz{ignore}
+    ];
 
-	my $verbose = defined $argz{verbose};
+	$verbose = defined $argz{verbose};
 
 	my $base = $argz{base};
 
@@ -122,54 +221,37 @@ sub import
 	#
 	# %found contains the abs_path results for each directory to 
 	# avoid double-including directories.
+    #
+    # note: loop short-curcuts for the (usually) list.
 
-	my %found =
-		map
-		{
-			(-d "$_/$base") ? (eval{abs_path("$_/$base")} => 1) : ()
-		}
-		@{ $argz{ignore} }
-	;
+    %found = ();
 
-	# walk down the tree from the root and find any dir's
-	# with the basename. if the dir exists at all then 
-	# abs_path it to ensure that a unique list of names
-	# is used -- the order of symlinks will still be used.
-	#
-	# if the item has not already been found and is an
-	# existing directory then store it and keep moving
-	# down the tree.
-	#
-	# reversing the list gets the lowest dir's first, which
-	# are the ones closer to the executable.
+    for( @{ $argz{ ignore } } )
+    {
+            if( my $dir = abs_path catdir $_, $base )
+            {
+                if( -d $dir )
+                {
+                    $found{ $dir } = 1;
+                }
+            }
+    }
+};
 
-	print STDERR "\nSearching $Bin for $base...\n"
-		if $verbose;
+sub import
+{
+    &$handle_args;
 
-	my $dir = '';
+    my @libz = find_libs;
 
-	my @libs =
-		reverse
-		map 
-		{
-			$dir .= "/$_";
-
-			my $lib = eval { abs_path "$dir/$base" };
-
-			defined $lib && ! $found{$lib} && -d $lib ?
-				($found{$lib}=$lib) : ()
-		}
-		split '/', $Bin
-	;
-
-	# print the dir's found if asked to, then do the deeds.
+    my $caller = caller;
 
 	if( $verbose || defined $argz{print} )
 	{
 		local $\ = "\n";
 		local $, = "\n\t";
 
-		print STDERR "Found */$base:", @libs
+		print STDERR "Found */$argz{ base }:", @libz
 	}
 
 	if( $argz{export} )
@@ -179,27 +261,35 @@ sub import
 		print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
 			if $verbose;
 
-		no strict 'refs';
+        # Symbol this is cleaner than "no strict" 
+        # for installing the array.
 
-		*{ $caller . '::' . $argz{export} } = \@libs
+        my $ref = qualify_to_ref $argz{ export }, $caller;
+
+        *$ref = \@libz;
 	}
 
 	if( $argz{use} )
 	{
 		my @code = 
-		qw(
+		qw
+        (
 			{
 				package caller ;
 				use lib qw( list ) ;
 			}
 		);
 
-		$code[2] = caller;
-		splice @code, 7, 1, @libs;
+        # insert the caller's package and replace the "list" 
+        # token with the libs found.
+
+		$code[2] = $caller;
+		splice @code, 7, 1, @libz;
 
 		my $code = join ' ', @code;
 
-		print STDERR "\n", $code, "\n" if $verbose;
+		print STDERR "\n", 'Executing:', $code, ''
+        if $verbose;
 
 		eval $code
 	}
@@ -217,6 +307,8 @@ __END__
 
 FindBin::libs - Locate and 'use lib' directories along
 the path of $FindBin::Bin to automate locating modules.
+Uses File::Spec and Cwd's abs_path to accomodate multiple
+O/S and redundant symlinks.
 
 =head1 SYNOPSIS
 
@@ -256,10 +348,15 @@ the path of $FindBin::Bin to automate locating modules.
 	use FindBin::libs qw( nouse noexport print ); # print only
 	use FindBin::libs qw( nouse noexport );       # do nothting at all
 
+    # print a few interesting messages about the 
+    # items found.
+
+    use FindBinlibs qw( verbose );
+
     # turn on a breakpoint after the args are prcoessed, before
     # any search/export/use lib is handled.
 
-    use FindBin::libs qw( debug=1 );
+    use FindBin::libs qw( debug );
 
 =head1 DESCRIPTION
 
@@ -274,7 +371,6 @@ that
 	use FindBin::libs qw( base=altlib );
 
 will search for directories named "altlib" and "use lib" them.
-
 
 The 'export' option will push an array of the directories found
 and takes an optional argument of the array name, which defaults 
@@ -356,8 +452,6 @@ out with the project, have multiple copies shared by developers,
 or easily move a module up the directory tree in a testbed
 to regression test the module with existing code. All without
 having to modify a single line of code.
-
-=over 4
 
 =item Code-speicfic modules.
 
@@ -470,24 +564,94 @@ with
 
 =back
 
+=head1 Notes
+
+=item File::Spec
+
+In order to accmodate a wider range of filesystems, 
+the code has been re-written to use File::Spec for
+all directory and volume manglement. 
+
+There is one thing that File::Spec does not handle,
+hoever, which is fully reolving absolute paths. That
+still has to be handled via abs_path, when it works.
+
+The issue is that File::Spec::rel2abs and 
+Cwd::abs_path work differently: abs_path only 
+returns true for existing directories and 
+resolves symlinks; rel2abs simply prepends cwd() 
+to any non-absolute paths.
+
+The difference for FinBin::libs is that 
+including redundant directories can lead to 
+unexpected results in what gets included; 
+looking up the contents of heavily-symlinked 
+paths is slow (and has some -- admittedly 
+unlikely -- failures at runtime). So, abs_path() 
+is the preferred way to find where the lib's 
+really live after they are found looking up the 
+tree. Using abs_path() also avoids problems 
+where the same directory is included twice in a 
+sandbox' tree via symlinks.
+
+Due to previous complaints that abs_path did not 
+work properly on all systems, the current 
+version of FindBin::libs uses File::Spec to 
+break apart and re-assemble directories, with 
+abs_path used optinally. If "abs_path cwd" works 
+then abs_path is used on the directory paths 
+handed by File::Spec::catpath(); otherwise the 
+paths are used as-is. This may leave users on 
+systms with non-working abs_path() having extra
+copies of external library directories in @INC.
+
+Another issue is that I've heard reports of 
+some systems failing the '-d' test on symlinks,
+where '-e' would have succeded. 
+
+=over 4
+
+=item 
 
 =head1 See Also
 
-NEXT::init can be combined with FB::l to manage data 
-inheritence.
+NEXT::init can be combined with FindBin::libs to 
+manage inherited data. This can be a lifesaver 
+for setting up working environments on systms with
+tiered sandboxes.
 
 =head1 BUGS
 
-Doesn't use File::Spec and depends on splitting $Bin on '/' to
-get subdirectories. Tested on *NIX, should run on OS/X, Cygwin. 
+=over 4
 
-Note: File::Spec::rel2abs and abs_path work differently:
-abs_path only returns true for existing directories and 
-resolves symlinks; rel2abs simply removes double-dot 
-directories from the path. I've used abs_path here to 
-avoid double-including symlinked directories and avoid 
-using directories that don't exist. 
+=item 
 
+In order to avoid including junk, FindBin::libs
+uses '-d' to test the items before including
+them on the library list. This works fine so 
+long as abs_path() is used to disambiguate any
+symlinks first. If abs_path() is turned off
+then legitimate directories may be left off in
+whatever local conditions might cause a valid
+symlink to fail the '-d' test."
+
+=item
+
+Oddity during "make test". You'll probably get
+a bunch of warnings like
+
+    Use of uninitialized value in string ne at
+    /opt/perl5/5.8/lib/5.8.6/i686-linux-thread-multi/File/Spec/Unix.pm
+    line 313.
+    Use of uninitialized value in concatenation (.) or string at
+    /opt/perl5/5.8/lib/5.8.6/i686-linux-thread-multi/File/Spec/Unix.pm
+    line 321.
+
+They do not show up with "prove -v t/*.t" nor with
+"perl t/01.t", etc. They also do not seem to affect 
+the outcome: all of the tests pass with the warnings.
+Only when running make test. At this point I am 
+going to ignore them.
 
 =head1 AUTHOR
 

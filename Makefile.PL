@@ -2,18 +2,24 @@ use ExtUtils::MakeMaker;
 
 WriteMakefile
 (
-	NAME            => 'FindBin::libs',
-	VERSION         => '1.07',
-	ABSTRACT_FROM	=> 'lib/FindBin/libs.pm',
-	PREREQ_PM =>
+
+    NAME            => 'FindBin::libs',
+    VERSION_FROM    => 'lib/FindBin/libs.pm',
+    ABSTRACT_FROM   => 'lib/FindBin/libs.pm',
+    PREREQ_PM =>
 	{
 		# standard distro, particular versions 
 		# are unlikely to cause pain.
 
-		strict    => 0,
-		warnings  => 0,
-		Carp      => 0,
-		Cwd       => 0,
-		FindBin   => 0,
-	},
+        strict      => 0,
+        warnings    => 0,
+        Carp        => 0,
+        Cwd         => 0,
+        FindBin     => 0,
+        Symbol      => 0,
+        File::Spec  => 0,
+        Cwd         => 0,
+
+    },
+
 );

@@ -1,15 +1,17 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         FindBin-libs
-version:      1.07
-version_from: 
+version:      1.20
+version_from: lib/FindBin/libs.pm
 installdirs:  site
 requires:
     Carp:                          0
     Cwd:                           0
+    File::Spec:                    0
     FindBin:                       0
     strict:                        0
+    Symbol:                        0
     warnings:                      0
 
 distribution_type: module
-generated_by: ExtUtils::MakeMaker version 6.28
+generated_by: ExtUtils::MakeMaker version 6.30

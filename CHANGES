@@ -1,3 +1,14 @@
+1.20 Sun Jan 29 19:29:03 EST 2006
+
+- Use File::Spec to split, assemble directory paths. 
+
+- Optinally stub Cwd::abs_path if it failes to resolve
+  cwd at startup.
+
+- Replaced test.pl with t/*.t.
+
+- POD
+
 1.07 Thu Sep  8 09:33:29 EDT 2005
 
 - RedHat Enterprise Version 4 has a bug that leaves $FindBin::Bin

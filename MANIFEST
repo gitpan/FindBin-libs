@@ -3,5 +3,7 @@ README
 CHANGES
 Makefile.PL
 lib/FindBin/libs.pm
-test.pl
 META.yml                                 Module meta-data (added by MakeMaker)
+t/01.t
+t/02.t
+t/03.t
