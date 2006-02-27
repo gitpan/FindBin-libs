@@ -1,3 +1,15 @@
+1.23 Mon Feb 27 12:49:02 EST 2006
+
+- Fix paren bug in catpath.
+
+- Update POD format bugs.
+
+1.21 Wed Feb  8 16:20:44 EST 2006
+
+- Trying to fix regex oddity on VMS...
+
+- Use ".+" to untaint $FindBin::Bin instead of "(.+)/?".
+
 1.20 Sun Jan 29 19:29:03 EST 2006
 
 - Use File::Spec to split, assemble directory paths. 

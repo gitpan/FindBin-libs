@@ -36,6 +36,8 @@ use Symbol;
 # both of these are in the standard distro and 
 # should be available.
 
+use File::Basename;
+
 use File::Spec::Functions
 qw
 (
@@ -59,13 +61,17 @@ BEGIN
     unless( eval { abs_path cwd } )
     {
         # abs_path seems to be having problems,
-        # fix is to stub it out.
+        # fix is to stub it out. ref and sub are
+        # syntatic sugar, but do you really want
+        # to see it all on one line???
 
         my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
 
+        my $sub = File::Spec::Functions->can( 'rel2abs' );
+
         undef &{ $ref };
 
-        *$ref = sub{ $_[0] };
+        *$ref = $sub
     };
 }
 
@@ -73,7 +79,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.20';
+our $VERSION = '1.23';
 
 my %defaultz = 
 (
@@ -104,9 +110,14 @@ my $verbose = 0;
 # subroutines
 ########################################################################
 
+# HAK ALERT: $Bin is an absolute path, there are cases
+# where splitdir does not add the leading '' onto the
+# directory path for it on VMS. Fix is to unshift a leading
+# '' into @dirpath where the leading entry is true.
+
 sub find_libs
 {
-    my $base = shift || $argz{ base };
+    my $base = basename ( shift || $argz{ base } );
 
     # for some reason, RH Enterprise V/4 has a 
     # trailing '/'; I havn't seen another copy of 
@@ -117,22 +128,27 @@ sub find_libs
     # after that split path can grab the directory 
     # portion for future use.
 
-    my ( $Bin ) = $FindBin::Bin =~ m{^(.+)/?$};
+    my ( $Bin ) = $FindBin::Bin =~ m{^ (.+) }xs;
 
 	print STDERR "\nSearching $Bin for '$base'...\n"
 		if $verbose;
 
-    my( $vol, $bin ) = splitpath $Bin, 1;
+    my( $vol, $dir ) = splitpath $Bin, 1;
 
-    my @bin = splitdir $bin;
+    my @dirpath = splitdir $dir;
+
+    # fix for File::Spec::VMS missing the leading empty
+    # string on a split. this can be removed once File::Spec
+    # is fixed.
+
+    unshift @dirpath, '' if $dirpath[ 0 ];
 
 	my @libz = ();
 
-    for( 1 .. @bin )
+    for( 1 .. @dirpath )
     {
-        
         my $abs
-        = abs_path ( catpath $vol, ( catdir @bin, $base ) );
+        = abs_path ( catpath $vol, ( catdir @dirpath ), $base );
 
         if( $abs && -d $abs && ! exists $found{ $abs } )
         {
@@ -141,7 +157,7 @@ sub find_libs
             push @libz, $abs;
         }
 
-        pop @bin
+        pop @dirpath
     }
 
     # caller gets back the existing lib paths 
@@ -236,6 +252,7 @@ my $handle_args
                 }
             }
     }
+
 };
 
 sub import
@@ -430,7 +447,7 @@ since the argument ignore list replaces the original one.
 
 An all-too-common occurrance managing perly projects is
 being unable to install new modules becuse "it might 
-break things", and being unable to test them becuase
+break things", and being unable to test them because
 you can't install them. The usual outcome of this is a 
 collection of hard-coded
 
@@ -452,6 +469,8 @@ out with the project, have multiple copies shared by developers,
 or easily move a module up the directory tree in a testbed
 to regression test the module with existing code. All without
 having to modify a single line of code.
+
+=over 4
 
 =item Code-speicfic modules.
 
@@ -562,8 +581,6 @@ with
 		()
 	}
 
-=back
-
 =head1 Notes
 
 =item File::Spec
@@ -609,16 +626,18 @@ Another issue is that I've heard reports of
 some systems failing the '-d' test on symlinks,
 where '-e' would have succeded. 
 
+=head1 See Also
+
 =over 4
 
 =item 
-
-=head1 See Also
 
 NEXT::init can be combined with FindBin::libs to 
 manage inherited data. This can be a lifesaver 
 for setting up working environments on systms with
 tiered sandboxes.
+
+=back
 
 =head1 BUGS
 
@@ -637,21 +656,13 @@ symlink to fail the '-d' test."
 
 =item
 
-Oddity during "make test". You'll probably get
-a bunch of warnings like
-
-    Use of uninitialized value in string ne at
-    /opt/perl5/5.8/lib/5.8.6/i686-linux-thread-multi/File/Spec/Unix.pm
-    line 313.
-    Use of uninitialized value in concatenation (.) or string at
-    /opt/perl5/5.8/lib/5.8.6/i686-linux-thread-multi/File/Spec/Unix.pm
-    line 321.
-
-They do not show up with "prove -v t/*.t" nor with
-"perl t/01.t", etc. They also do not seem to affect 
-the outcome: all of the tests pass with the warnings.
-Only when running make test. At this point I am 
-going to ignore them.
+File::Spec 3.16 and prior have a bug in VMS of
+not returning an absolute paths in splitdir for
+dir's without a leading '.'. Fix for this is to
+unshift '' @dirpath if $dirpath[0]. While not a
+bug, this is obviously a somewhat kludgy workaround
+and should be removed (with an added test for a 
+working version) once the File::Spec is fixed.
 
 =head1 AUTHOR
 
