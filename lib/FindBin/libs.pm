@@ -79,7 +79,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.23';
+our $VERSION = '1.24';
 
 my %defaultz = 
 (
@@ -105,6 +105,8 @@ my %found = ();
 my %argz = ();
 
 my $verbose = 0;
+
+my $empty = q{};
 
 ########################################################################
 # subroutines
@@ -147,8 +149,13 @@ sub find_libs
 
     for( 1 .. @dirpath )
     {
+        # note that catpath is extraneous on *NIX; the 
+        # volume only means something on DOS- & VMS-based
+        # filesystems, and adding an empty basename on 
+        # *nix is unnecessary.
+
         my $abs
-        = abs_path ( catpath $vol, ( catdir @dirpath ), $base );
+        = abs_path ( catpath $vol, ( catdir @dirpath, $base ), $empty );
 
         if( $abs && -d $abs && ! exists $found{ $abs } )
         {
