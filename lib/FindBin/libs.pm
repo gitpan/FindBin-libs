@@ -79,7 +79,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.24';
+our $VERSION = '1.25';
 
 my %defaultz = 
 (
@@ -588,6 +588,34 @@ with
 		()
 	}
 
+=item using "prove" with local modules.
+
+Modules that are not intended for CPAN will not usually have
+a Makefile.PL or Build setup. This makes it harder to check
+the code via "make test". Instead of hacking a one-time 
+Makefile, FindBin::libs can be used to locate modules in 
+a "lib" directory adjacent to the "t: directory. The setup
+for this module would look like:
+
+
+    ./t/01.t
+    ./t/02.t
+    ...
+
+    ./lib/FindBin/libs.pm
+
+since the *.t files use FindBin::libs they can locate the 
+most recent version of code without it having to be copied
+into a ./blib directory (usually via make) before being
+processed. If the module did not have a Makefile this would
+allow:
+
+    prove t/*.t;
+
+to check the code.
+
+
+
 =head1 Notes
 
 =item File::Spec
@@ -666,7 +694,7 @@ symlink to fail the '-d' test."
 File::Spec 3.16 and prior have a bug in VMS of
 not returning an absolute paths in splitdir for
 dir's without a leading '.'. Fix for this is to
-unshift '' @dirpath if $dirpath[0]. While not a
+unshift '', @dirpath if $dirpath[0]. While not a
 bug, this is obviously a somewhat kludgy workaround
 and should be removed (with an added test for a 
 working version) once the File::Spec is fixed.
