@@ -79,16 +79,17 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.25';
+our $VERSION = '1.26';
 
 my %defaultz = 
 (
+  Bin     => $FindBin::Bin,
 	base    => 'lib',
 	use     => 1,
 
 	export	=> undef,
 	verbose => undef,
-    debug   => undef,
+  debug   => undef,
 
 	print   => undef,
 
@@ -130,9 +131,11 @@ sub find_libs
     # after that split path can grab the directory 
     # portion for future use.
 
-    my ( $Bin ) = $FindBin::Bin =~ m{^ (.+) }xs;
+    $DB::single = 1;
 
-	print STDERR "\nSearching $Bin for '$base'...\n"
+    my ( $Bin ) = $argz{ Bin } =~ m{^ (.+) }xs;
+
+    print STDERR "\nSearching $Bin for '$base'...\n"
 		if $verbose;
 
     my( $vol, $dir ) = splitpath $Bin, 1;
@@ -206,9 +209,9 @@ my $handle_args
 		@_
 	;
 
-    # stuff "debug=1" into your arguments and perl -d will stop here.
+  # stuff "debug=1" into your arguments and perl -d will stop here.
 
-    $DB::single = 1 if $argz{debug};
+  $DB::single = 1 if $argz{debug};
 
 	# use defaults to false if export is an argument and use is not
 	# (or nouse is specified).
@@ -251,74 +254,73 @@ my $handle_args
 
     for( @{ $argz{ ignore } } )
     {
-            if( my $dir = abs_path catdir $_, $base )
-            {
-                if( -d $dir )
-                {
-                    $found{ $dir } = 1;
-                }
-            }
+      if( my $dir = abs_path catdir $_, $base )
+      {
+        if( -d $dir )
+        {
+          $found{ $dir } = 1;
+        }
+      }
     }
-
 };
 
 sub import
 {
-    &$handle_args;
+  &$handle_args;
 
-    my @libz = find_libs;
+  my @libz = find_libs;
 
+  my $caller = caller;
+
+  if( $verbose || defined $argz{print} )
+  {
+    local $\ = "\n";
+    local $, = "\n\t";
+
+    print STDERR "Found */$argz{ base }:", @libz
+  }
+
+  if( $argz{export} )
+  {
     my $caller = caller;
 
-	if( $verbose || defined $argz{print} )
-	{
-		local $\ = "\n";
-		local $, = "\n\t";
+    print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
+    if $verbose;
 
-		print STDERR "Found */$argz{ base }:", @libz
-	}
+    # Symbol this is cleaner than "no strict" 
+    # for installing the array.
 
-	if( $argz{export} )
-	{
-		my $caller = caller;
+    my $ref = qualify_to_ref $argz{ export }, $caller;
 
-		print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
-			if $verbose;
+    *$ref = \@libz;
+  }
 
-        # Symbol this is cleaner than "no strict" 
-        # for installing the array.
+  if( $argz{use} )
+  {
+    my @code = 
+    qw
+    (
+      {
+        package caller ;
+        use lib qw( list ) ;
+      }
+    );
 
-        my $ref = qualify_to_ref $argz{ export }, $caller;
+    # insert the caller's package and replace the "list" 
+    # token with the libs found.
 
-        *$ref = \@libz;
-	}
+    $code[2] = $caller;
+    splice @code, 7, 1, @libz;
 
-	if( $argz{use} )
-	{
-		my @code = 
-		qw
-        (
-			{
-				package caller ;
-				use lib qw( list ) ;
-			}
-		);
+    my $code = join ' ', @code;
 
-        # insert the caller's package and replace the "list" 
-        # token with the libs found.
+    print STDERR "\n", 'Executing:', $code, ''
+    if $verbose;
 
-		$code[2] = $caller;
-		splice @code, 7, 1, @libz;
+    eval $code
+  }
 
-		my $code = join ' ', @code;
-
-		print STDERR "\n", 'Executing:', $code, ''
-        if $verbose;
-
-		eval $code
-	}
-
-	0
+  0
 }
 
 # keep require happy
@@ -614,11 +616,68 @@ allow:
 
 to check the code.
 
-
-
 =head1 Notes
 
-=item File::Spec
+=head2 Alternatives
+
+FindBin::libs was developed to avoid pitfalls with
+the items listed below. As of FindBin::libs-1.20,
+this is also mutli-platform, where other techniques
+may be limited to *NIX or at least less portable.
+
+=item PERL5LIBS
+
+PERL5LIB can be used to accomplish the same directory
+lookups as FindBin::libs.  The problem is PERL5LIB often
+contains absolte paths and does not automatically change
+depending on where tests are run. This can leave you 
+modifying a file, changing directory to see if it works
+with some other code and testing an unmodified version of 
+the code via PERL5LIB. FindBin::libs avoids this by using
+$FindBin::bin to reference where the code is running from.
+
+The same is true of trying to use almost any environmental
+solution, with Perl's built in mechanism or one based on
+$ENV{ PWD } or qx( pwd ).
+
+=item use lib qw( ../../../../Lib );
+
+This works, but how many dots do you need to get all
+the working lib's into a module or #! code? Class
+distrubuted among several levels subdirectories may
+have qw( ../../../lib ) vs. qw( ../../../../lib )
+or various combinations of them. Validating these by
+hand (let alone correcting them) leaves me crosseyed
+after only a short session.
+
+=item Anchor on a fixed lib directory.
+
+Given a standard directory, it is possible to use
+something like:
+
+    BEGIN
+    {
+        my ( $libdir ) = $0 =~ m{ ^( .+? )/SOMEDIR/ }x;
+
+        eval "use lib qw( $libdir )";
+    }
+
+This looks for a standard location (e.g., /path/to/Mylib)
+in the executable path (or cwd) and uses that. 
+
+The main problem here is that if the anchor ever changes
+(e.g., when moving code between projects or relocating 
+directories now that SVN supports it) the path often has
+to change in multiple files. The regex also may have to
+support multiple platforms, or be broken into more complicated
+File::Spec code that probably looks pretty much like what
+
+    use FindBin::libs qw( base=Mylib )
+
+does anyway.
+
+
+=head2 FindBin::libs-1.2+ uses File::Spec
 
 In order to accmodate a wider range of filesystems, 
 the code has been re-written to use File::Spec for

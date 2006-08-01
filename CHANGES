@@ -1,3 +1,9 @@
+
+1.26 Tue Aug  1 12:26:13 EDT 2006
+
+- Added Bin argument to allow overriding $FindBin::Bin
+  as the root of all evil.
+
 1.25 Fri Mar  3 08:37:49 EST 2006
 
 - POD: using prove without a blib.
