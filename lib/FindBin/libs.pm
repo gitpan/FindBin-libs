@@ -49,7 +49,7 @@ qw
 
 BEGIN
 {
-    # however... there have been complains of 
+    # however... there have been complaints of 
     # places where abs_path does not work. 
     #
     # if abs_path fails on the working directory
@@ -79,21 +79,23 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.26';
+our $VERSION = '1.30';
 
 my %defaultz = 
 (
-  Bin     => $FindBin::Bin,
-	base    => 'lib',
-	use     => 1,
+    Bin     => $FindBin::Bin,
+    base    => 'lib',
+    use     => 1,
 
-	export	=> undef,
-	verbose => undef,
-  debug   => undef,
+    export  => undef,   # push variable into caller's space.
+    verbose => undef,   # boolean: print inputs, results.
+    debug   => undef,   # boolean: set internal breakpoints.
 
-	print   => undef,
+    print   => undef,   # display the results
 
-	ignore => '/,/usr',
+    p5lib   => undef,   # prefix PERL5LIB with the results
+
+    ignore => '/,/usr', # dir's to skip looking for ./lib
 );
 
 # only new directories are used, ignore pre-loads
@@ -131,12 +133,10 @@ sub find_libs
     # after that split path can grab the directory 
     # portion for future use.
 
-    $DB::single = 1;
-
     my ( $Bin ) = $argz{ Bin } =~ m{^ (.+) }xs;
 
     print STDERR "\nSearching $Bin for '$base'...\n"
-		if $verbose;
+        if $verbose;
 
     my( $vol, $dir ) = splitpath $Bin, 1;
 
@@ -148,7 +148,7 @@ sub find_libs
 
     unshift @dirpath, '' if $dirpath[ 0 ];
 
-	my @libz = ();
+    my @libz = ();
 
     for( 1 .. @dirpath )
     {
@@ -185,68 +185,69 @@ sub find_libs
 my $handle_args 
 = sub
 {
-	# discard the module, rest are arguments.
+    # discard the module, rest are arguments.
 
-	shift;
+    shift;
 
-	# anything after the module are options with arguments
-	# assigned via '='.
+    # anything after the module are options with arguments
+    # assigned via '='.
 
-	%argz = 
-		map
-		{
-			my ( $k, $v ) = split '=', $_, 2;
+    %argz = 
+        map
+        {
+            my ( $k, $v ) = split '=', $_, 2;
 
-			if( $k =~ s{^(?:!|no)}{} )
-			{
-				$k => undef
-			}
-			else
-			{
-				$k => ( $v || '' )
-			}
-		}
-		@_
-	;
+            if( $k =~ s{^(?:!|no)}{} )
+            {
+                $k => undef
+            }
+            else
+            {
+                $k => ( $v || '' )
+            }
+        }
+        @_
+    ;
 
   # stuff "debug=1" into your arguments and perl -d will stop here.
 
   $DB::single = 1 if $argz{debug};
 
-	# use defaults to false if export is an argument and use is not
-	# (or nouse is specified).
+    # use lib behavior is turned off by default if export or
+    # perl5lib udpate are requested.
 
-	exists $argz{use} or $defaultz{use} = ! exists $argz{export};
+    exists $argz{use} or $defaultz{use} = ! exists $argz{export};
+    exists $argz{use} or $defaultz{use} = ! exists $argz{p5lib};
 
-	# now apply the defaults, then sanity check the result.
-	# base is a special case since it always has to exist.
-	#
-	# if $argz{export} is defined but false then it takes
-	# its default from $argz{base}.
+    # now apply the defaults, then sanity check the result.
+    # base is a special case since it always has to exist.
+    #
+    # if $argz{export} is defined but false then it takes
+    # its default from $argz{base}.
 
-	exists $argz{$_} or $argz{$_} = $defaultz{$_}
+    exists $argz{$_} or $argz{$_} = $defaultz{$_}
     for keys %defaultz;
 
-	exists $argz{base} && $argz{base} 
+    exists $argz{base} && $argz{base} 
     or croak "Bogus FindBin::libs: missing/false base argument, should be 'base=NAME'";
 
-	defined $argz{export} and $argz{export} ||= $argz{base};
+    defined $argz{export} and $argz{export} ||= $argz{base};
 
-	$argz{ ignore } =
+    $argz{ ignore } =
     [
         grep { $_ }
         split /\s*,\s*/,
         $argz{ignore}
     ];
 
-	$verbose = defined $argz{verbose};
+    $verbose = defined $argz{verbose};
 
-	my $base = $argz{base};
+    my $base = $argz{base};
 
-	# now locate the libraries.
-	#
-	# %found contains the abs_path results for each directory to 
-	# avoid double-including directories.
+    # now locate the libraries.
+    #
+    # %found contains the abs_path results for each directory to 
+    # avoid double-including directories.
     #
     # note: loop short-curcuts for the (usually) list.
 
@@ -295,6 +296,17 @@ sub import
     *$ref = \@libz;
   }
 
+  if( $argz{ p5lib } )
+  {
+    # stuff the lib's found at the front of $ENV{ PERL5LIB }
+
+    ( substr $ENV{ PERL5LIB }, 0, 0 ) = join ':', @libz, ''
+    if @libz;
+
+    print STDERR "\nUpdated PERL5LIB:\t$ENV{ PERL5LIB }\n"
+    if $verbose;
+  }
+
   if( $argz{use} )
   {
     my @code = 
@@ -338,41 +350,45 @@ O/S and redundant symlinks.
 
 =head1 SYNOPSIS
 
-	# search up $FindBin::Bin looking for ./lib directories
-	# and "use lib" them.
+    # search up $FindBin::Bin looking for ./lib directories
+    # and "use lib" them.
 
-	use FindBin::libs;
+    use FindBin::libs;
 
-	# same as above with explicit defaults.
+    # same as above with explicit defaults.
 
-	use FindBin::libs qw( base=lib use noexport noprint );
+    use FindBin::libs qw( base=lib use noexport noprint );
 
-	# print the lib dir's before using them.
+    # print the lib dir's before using them.
 
-	use FindBin::libs qw( print );
+    use FindBin::libs qw( print );
 
-	# find and use lib "altlib" dir's
+    # find and use lib "altlib" dir's
 
-	use FindBin::libs qw( base=altlib );
+    use FindBin::libs qw( base=altlib );
 
-	# skip "use lib", export "@altlib" instead.
+    # move starting point from $FindBin::Bin to '/tmp'
 
-	use FindBin::libs qw( base=altlib export );
+    use FindBin::libs qw( Bin=/tmp base=altlib );
 
-	# find altlib directories, use lib them and export @mylibs
+    # skip "use lib", export "@altlib" instead.
 
-	use FindBin::libs qw( base=altlib export=mylibs use );
+    use FindBin::libs qw( base=altlib export );
 
-	# "export" defaults to "nouse", these two are identical:
+    # find altlib directories, use lib them and export @mylibs
 
-	use FindBin::libs qw( export nouse );
-	use FindBin::libs qw( export       );
+    use FindBin::libs qw( base=altlib export=mylibs use );
 
-	# use and export are not exclusive:
+    # "export" defaults to "nouse", these two are identical:
 
-	use FindBin::libs qw( use export );           # do both
-	use FindBin::libs qw( nouse noexport print ); # print only
-	use FindBin::libs qw( nouse noexport );       # do nothting at all
+    use FindBin::libs qw( export nouse );
+    use FindBin::libs qw( export       );
+
+    # use and export are not exclusive:
+
+    use FindBin::libs qw( use export );           # do both
+    use FindBin::libs qw( nouse noexport print ); # print only
+    use FindBin::libs qw( nouse noexport );       # do nothting at all
 
     # print a few interesting messages about the 
     # items found.
@@ -384,6 +400,10 @@ O/S and redundant symlinks.
 
     use FindBin::libs qw( debug );
 
+    # prefix PERL5LIB with the lib's found.
+
+    use FindBin::libs qw( perl5lib );
+
 =head1 DESCRIPTION
 
 =head2 General Use
@@ -391,23 +411,44 @@ O/S and redundant symlinks.
 This module will locate directories along the path to $FindBin::Bin
 and "use lib" or export an array of the directories found. The default
 is to locate "lib" directories and "use lib" them without printing
-the list. The basename searched for can be changed via 'base=name' so
+the list.
+
+Options controll whether the lib's found are exported into the caller's
+space, exported to PERL5LIB, or printed. Exporting or setting perl5lib
+will turn off the default of "use lib" so that:
+
+    use FindBin::libs qw( export );
+    use FindBin::libs qw( p5lib  );
+
+are equivalent to 
+
+    use FindBin::libs qw( export nouse );
+    use FindBin::libs qw( p5lib  nouse );
+
+Combining export with use or p5lib may be useful, p5lib and
+use are probably not all that useful together.
+
+=head3 Alternate directory name: 'base'
+
+The basename searched for can be changed via 'base=name' so
 that
 
-	use FindBin::libs qw( base=altlib );
+    use FindBin::libs qw( base=altlib );
 
 will search for directories named "altlib" and "use lib" them.
+
+=head3 Exporting a variable: 'export'
 
 The 'export' option will push an array of the directories found
 and takes an optional argument of the array name, which defaults 
 to the basename searched for:
 
-	use FindBin::libs qw( export );
+    use FindBin::libs qw( export );
 
 will find "lib" directories and export @lib with the
 list of directories found.
 
-	use FindBin::libs qw( export=mylibs );
+    use FindBin::libs qw( export=mylibs );
 
 will find "lib" directories and export them as "@mylibs" to
 the caller.
@@ -415,8 +456,8 @@ the caller.
 If "export" only is given then the "use" option defaults to 
 false. So:
 
-	use FindBin::libs qw( export );
-	use FindBin::libs qw( export nouse );
+    use FindBin::libs qw( export );
+    use FindBin::libs qw( export nouse );
 
 are equivalent. This is mainly for use when looking for data
 directories with the "base=" argument.
@@ -424,20 +465,51 @@ directories with the "base=" argument.
 If base is used with export the default array name is the base
 directory value:
 
-	use FindBin::libs qw( export base=meta );
+    use FindBin::libs qw( export base=meta );
 
 exports @meta while
 
-	use FindBin::libs qw( export=metadirs base=meta );
+    use FindBin::libs qw( export=metadirs base=meta );
 
 exports @metadirs.
 
 The use and export switches are not exclusive:
 
-	use FindBin::libs qw( use export=mylibs );
+    use FindBin::libs qw( use export=mylibs );
 
 will locate "lib" directories, use lib them, and export 
 @mylibs into the caller's package. 
+
+=head3 Setting PERL5LIB: p5lib
+
+For cases where the environment is more useful for setting
+up library paths "p5lib" can be used to preload this variable.
+This is mainly useful for automatically including directories
+outside of the parent tree of $FindBin::bin.
+
+For example, using:
+
+    $ export PERL5LIB="/usr/local/foo:/usr/local/bar";
+
+    $ myprog;
+
+or simply
+
+    $ PERL5LIB="/usr/local/lib/foo:/usr/lib/bar" myprog;
+
+(depending on your shell) with #! code including:
+
+    use FindBin::libs qw( p5lib );
+
+will not "use lib" any dir's found but will update PERL5LIB
+to something like:
+
+    /home/me/sandbox/branches/lib:/usr/local/lib/foo:/usr/lib/bar
+
+This can make controlling the paths used simpler and avoid
+the use of symlinks for some testing (see examples below).
+
+Note that "p5lib" and "nouse" are proably worth 
 
 =head2 Skipping directories
 
@@ -446,7 +518,7 @@ sliently ignored. This normally means that /lib, /usr/lib, and
 '/usr/local/lib' are skipped. The "ignore" parameter provides
 a comma-separated list of directories to ignore:
 
-	use FindBin::libs qw( ignore=/skip/this,/and/this/also );
+    use FindBin::libs qw( ignore=/skip/this,/and/this/also );
 
 will replace the standard list and thus skip "/skip/this/lib"
 and "/and/this/also/lib". It will search "/lib" and "/usr/lib"
@@ -460,7 +532,7 @@ break things", and being unable to test them because
 you can't install them. The usual outcome of this is a 
 collection of hard-coded
 
-	use lib qw( /usr/local/projectX ... )
+    use lib qw( /usr/local/projectX ... )
 
 code at the top of each #! file that has to be updated by
 hand for each new project.
@@ -500,12 +572,12 @@ symlink.
 If your #! uses FindBin::libs in it then it will
 effectively
 
-	use lib
-	qw(
-		/home/jowbloe/sandbox/lib
-		/home/jowbloe/sandbox/project/lib
-		/home/jowbloe/sandbox/project/package/lib
-	);
+    use lib
+    qw(
+        /home/jowbloe/sandbox/lib
+        /home/jowbloe/sandbox/project/lib
+        /home/jowbloe/sandbox/project/package/lib
+    );
 
 if you run /home/jowbloe/sandbox/project/package/bin/foobar.
 This will happen the same way if you use a relative or
@@ -540,16 +612,16 @@ This allows a symlink to change the location of directories used
 by FindBin::libs. Full regression testing of an executable can be
 accomplished with a symlink:
 
-	./sandbox
-		./lib -> /homegrown/dir/lib
-		./lib/What/Ever.pm
+    ./sandbox
+        ./lib -> /homegrown/dir/lib
+        ./lib/What/Ever.pm
 
-		./pre-change
-			./bin/foobar
+        ./pre-change
+            ./bin/foobar
 
-		./post-change
-			./lib/What/Ever.pm
-			./bin/foobar -> ../../pre-last-change/bin/foobar
+        ./post-change
+            ./lib/What/Ever.pm
+            ./bin/foobar -> ../../pre-last-change/bin/foobar
 
 Running foobar symlinked into the post-change directory will
 test it with whatever collection of modules is in the post-change
@@ -562,33 +634,33 @@ sandbox area.
 The "base" option alters FindBin::libs standard base directory.
 This allows for a heirarchical set of metadata directories:
 
-	./sandbox
-		./meta
-		./project/
-			./meta
+    ./sandbox
+        ./meta
+        ./project/
+            ./meta
 
-		./project/package
-			./bin
-			./meta
+        ./project/package
+            ./bin
+            ./meta
 
 with
 
-	use FindBin::libs qw( base=meta export );
+    use FindBin::libs qw( base=meta export );
 
-	sub read_meta
-	{
-		my $base = shift;
+    sub read_meta
+    {
+        my $base = shift;
 
-		for my $dir ( @meta )
-		{
-			# open the first one and return
-			...
-		}
+        for my $dir ( @meta )
+        {
+            # open the first one and return
+            ...
+        }
 
-		# caller gets back empty list if nothing was read.
+        # caller gets back empty list if nothing was read.
 
-		()
-	}
+        ()
+    }
 
 =item using "prove" with local modules.
 
@@ -639,6 +711,10 @@ $FindBin::bin to reference where the code is running from.
 The same is true of trying to use almost any environmental
 solution, with Perl's built in mechanism or one based on
 $ENV{ PWD } or qx( pwd ).
+
+Aside: Combining an existing PERL5LIB for 
+out-of-tree lookups with the "p5lib" option 
+works well for most development situations. 
 
 =item use lib qw( ../../../../Lib );
 
