@@ -25,7 +25,6 @@ package FindBin::libs;
 use 5.6.1;
 
 use strict;
-use warnings;
 
 use Carp qw( &croak );
 
@@ -79,7 +78,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 my %defaultz = 
 (
@@ -192,26 +191,25 @@ my $handle_args
     # anything after the module are options with arguments
     # assigned via '='.
 
-    %argz = 
-        map
+    %argz
+    = map
+    {
+        my ( $k, $v ) = split '=', $_, 2;
+
+        if( $k =~ s{^(?:!|no)}{} )
         {
-            my ( $k, $v ) = split '=', $_, 2;
-
-            if( $k =~ s{^(?:!|no)}{} )
-            {
-                $k => undef
-            }
-            else
-            {
-                $k => ( $v || '' )
-            }
+            $k => undef
         }
-        @_
-    ;
+        else
+        {
+            $k => ( $v || '' )
+        }
+    }
+    @_;
 
-  # stuff "debug=1" into your arguments and perl -d will stop here.
+    # stuff "debug=1" into your arguments and perl -d will stop here.
 
-  $DB::single = 1 if $argz{debug};
+    $DB::single = 1 if $argz{debug};
 
     # use lib behavior is turned off by default if export or
     # perl5lib udpate are requested.
@@ -296,7 +294,7 @@ sub import
     *$ref = \@libz;
   }
 
-  if( $argz{ p5lib } )
+  if( defined $argz{ p5lib } )
   {
     # stuff the lib's found at the front of $ENV{ PERL5LIB }
 
@@ -590,6 +588,16 @@ This means that the most specific module directories
 If you have a version of Frobnicate.pm in your ./package/lib
 for modifications fine: you'll use it before the one in 
 ./project or ./sandbox. 
+
+Using the "p5lib" argument can help in case where some of 
+the code lives outside of the sandbox. To test a sandbox
+version of some other module:
+
+    use FindBin::libs qw( p5lib );
+
+and
+
+    $ PERL5LIB=/other/sandbox/module foobar;
 
 =item Regression Testing
 
