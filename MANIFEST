@@ -2,12 +2,10 @@ lib/FindBin/libs.pm
 CHANGES
 MANIFEST
 META.yml
-Makefile
 Makefile.PL
 README
 t/01.t
 t/02.t
 t/03.t
 example/p5run
-pm_to_blib
 META.yml                                 Module meta-data (added by MakeMaker)
