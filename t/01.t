@@ -8,4 +8,4 @@ use Test::More tests => 1;
 
 use_ok( 'FindBin::libs', 'Module is use-able' );
 
-exit 0;
+__END__

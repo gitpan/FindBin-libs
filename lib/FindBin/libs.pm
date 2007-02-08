@@ -78,7 +78,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.32';
+our $VERSION = '1.33';
 
 my %defaultz = 
 (
@@ -86,6 +86,8 @@ my %defaultz =
     base    => 'lib',
     use     => 1,
 
+    subdir  => '',      # add this subdir also if found.
+    subonly => undef,   # leave out lib's, use only subdir.
     export  => undef,   # push variable into caller's space.
     verbose => undef,   # boolean: print inputs, results.
     debug   => undef,   # boolean: set internal breakpoints.
@@ -121,7 +123,11 @@ my $empty = q{};
 
 sub find_libs
 {
-    my $base = basename ( shift || $argz{ base } );
+    my $base    = basename ( shift || $argz{ base } );
+
+    my $subdir  = $argz{ subdir } || '';
+
+    my $subonly = defined $argz{ subonly };
 
     # for some reason, RH Enterprise V/4 has a 
     # trailing '/'; I havn't seen another copy of 
@@ -147,7 +153,7 @@ sub find_libs
 
     unshift @dirpath, '' if $dirpath[ 0 ];
 
-    my @libz = ();
+    my @libz    = ();
 
     for( 1 .. @dirpath )
     {
@@ -159,11 +165,22 @@ sub find_libs
         my $abs
         = abs_path ( catpath $vol, ( catdir @dirpath, $base ), $empty );
 
-        if( $abs && -d $abs && ! exists $found{ $abs } )
-        {
-            $found{ $abs } = 1;
+        my $sub
+        = $subdir
+        ? abs_path ( catpath '', $abs, $subdir )
+        : ''
+        ;
 
-            push @libz, $abs;
+        my @search = $subonly ? ( $sub ) : ( $abs, $sub );
+
+        for my $dir ( @search )
+        {
+            if( $dir && -d $dir && ! exists $found{ $dir } )
+            {
+                $found{ $dir } = 1;
+
+                push @libz, $dir;
+            }
         }
 
         pop @dirpath
@@ -402,6 +419,23 @@ O/S and redundant symlinks.
 
     use FindBin::libs qw( perl5lib );
 
+    # find a subdir of the lib's looked for.
+    # the first example will use both ../lib and
+    # ../lib/perl5; the second ../lib/perl5/frobnicate
+    # (if they exist). it can also be used with export
+    # and base to locate special configuration dir's.
+    #
+    # subonly with a base is useful for locating config
+    # files. this finds any "./config/mypackage" dir's
+    # without including any ./config dir's. the result
+    # ends up in @config (see also "export=", above).
+
+    use FindBin::libs qw( subdir=perl5 );
+
+    use FindBin::libs qw( subdir=perl5/frobnicate );
+
+    use FindBin::libs qw( base=config subdir=mypackage subonly export );
+
 =head1 DESCRIPTION
 
 =head2 General Use
@@ -477,6 +511,22 @@ The use and export switches are not exclusive:
 
 will locate "lib" directories, use lib them, and export 
 @mylibs into the caller's package. 
+
+=head3 Subdirectories
+
+The "subdir" and "subonly" settings will add or 
+exclusively use subdir's. This is useful if some
+of your lib's are in ../lib/perl5 along with 
+../lib (subdir=perl5) or all of the lib's are 
+in ../lib/perl5 (subonly=perl5).
+
+This can also be handy for locating subdir's used
+for configuring packages:
+
+    use FindBin::libs qw( export base=config subonly=mypackage );
+
+Will leave @config with any "mypacakge" holding
+any "mypackage" subdir's.
 
 =head3 Setting PERL5LIB: p5lib
 

@@ -1,3 +1,8 @@
+1.33 Tue Feb  6 11:40:10 EST 2007
+
+Add subdir and subonly to look below the ./lib
+dir's for things like ../lib/perl5.
+
 1.32 Sat Jan 20 15:58:36 EST 2007
 
 Repair botched MANIFEST
