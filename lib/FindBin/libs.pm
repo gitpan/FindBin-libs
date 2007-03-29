@@ -78,7 +78,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.33';
+our $VERSION = '1.34';
 
 my %defaultz = 
 (
@@ -161,13 +161,17 @@ sub find_libs
         # volume only means something on DOS- & VMS-based
         # filesystems, and adding an empty basename on 
         # *nix is unnecessary.
+        #
+        # HAK ALERT: the poor slobs stock on windog have an
+        # abs_path that croaks on missing directories. have
+        # to eval the check for subdir's. 
 
         my $abs
-        = abs_path ( catpath $vol, ( catdir @dirpath, $base ), $empty );
+        = abs_path catpath $vol, ( catdir @dirpath, $base ), $empty;
 
         my $sub
         = $subdir
-        ? abs_path ( catpath '', $abs, $subdir )
+        ? eval { abs_path ( catpath '', $abs, $subdir ) } || ''
         : ''
         ;
 
