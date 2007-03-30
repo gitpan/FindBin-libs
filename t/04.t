@@ -7,8 +7,8 @@ use strict;
 $\ = "\n";
 $, = "\n\t";
 
-BEGIN   { mkdir './lib/foo', 0555   }
-END     { rmdir './lib/foo'         }
+BEGIN { -d './lib/foo' || mkdir './lib/foo', 0555  or die $! }
+END   { -d './lib/foo' && rmdir './lib/foo'        or die $! }
 
 use FindBin::libs qw( export subdir=foo );
 

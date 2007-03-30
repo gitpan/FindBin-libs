@@ -54,15 +54,22 @@ BEGIN
     # if abs_path fails on the working directory
     # then replace it with rel2abs and live with 
     # possibly slower, redundant directories.
+    #
+    # the abs_path '//' hack allows for testing 
+    # broken abs_path on primitive systems that
+    # cannot handle the rooted system being linked
+    # back to itself.
 
     use Cwd qw( &abs_path &cwd );
 
-    unless( eval { abs_path cwd } )
+    unless( eval {abs_path '//';  abs_path cwd } )
     {
         # abs_path seems to be having problems,
         # fix is to stub it out. ref and sub are
         # syntatic sugar, but do you really want
         # to see it all on one line???
+        #
+        # undef avoids re-defining subroutine nastygram.
 
         my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
 
