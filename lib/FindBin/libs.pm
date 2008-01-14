@@ -174,7 +174,8 @@ sub find_libs
         # to eval the check for subdir's. 
 
         my $abs
-        = abs_path catpath $vol, ( catdir @dirpath, $base ), $empty;
+        = eval { abs_path catpath $vol, ( catdir @dirpath, $base ), $empty }
+        || '';
 
         my $sub
         = $subdir
@@ -281,7 +282,7 @@ my $handle_args
 
     for( @{ $argz{ ignore } } )
     {
-      if( my $dir = abs_path catdir $_, $base )
+      if( my $dir = eval { abs_path catdir $_, $base } )
       {
         if( -d $dir )
         {

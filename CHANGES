@@ -1,3 +1,11 @@
+1.36 Sun Jan 13 22:37:46 EST 2008
+
+Add eval for abs_path, apparently Cygwin's abs_path 
+croaks when the path doesn't exist (vs. simply
+returning undef). Fix is to eval the abs_path
+calls.
+
+
 1.35 Fri Mar 30 13:05:45 EDT 2007
 
 Add additional check for broken abs_path on W32.
