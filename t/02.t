@@ -16,7 +16,7 @@ $, = "\n\t";
 
 BEGIN
 {
-	eval { symlink qw( /nonexistant/path/to/foobar ./foobar ) }
+    eval { symlink qw( /nonexistant/path/to/foobar ./foobar ) }
 }
 
 use FindBin::libs qw( export                                            );
@@ -25,20 +25,18 @@ use FindBin::libs qw( export=binz  base=bin            ignore=/foo,/bar );
 use FindBin::libs qw( export=junk  base=frobnicatorium                  );
 use FindBin::libs qw( export       base=foobar                          );
 
+# clean up temp files on the way out.
+
 unlink './foobar';
 
 use Test::More tests => 5;
 
 $DB::single = 1;
 
-ok( @lib,		    '@lib exported'   );
-ok( @found,		  '@found exported' );
-ok( @binz,    	'@binz exported'  );
-ok( ! @junk,  	'empty @junk exported'  );
-ok( ! @foobar,	'empty @foobar exported' );
-
-# clean up temp files on the way out.
-
-eval { -e and unlink } for qw( ./foobar );
+ok(   @lib,     '@lib exported'   );
+ok(   @found,   '@found exported' );
+ok(   @binz,    '@binz exported'  );
+ok( ! @junk,    'empty @junk exported'  );
+ok( ! @foobar,  'empty @foobar exported' );
 
 exit 0;

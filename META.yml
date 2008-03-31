@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                FindBin-libs
-version:             1.36
+version:             1.37
 abstract:            Locate and 'use lib' directories along
 license:             ~
 author:              ~

@@ -22,7 +22,7 @@
 
 package FindBin::libs;
 
-use 5.6.1;
+use 5.00601;
 
 use strict;
 
@@ -85,7 +85,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.34';
+our $VERSION = '1.37';
 
 my %defaultz = 
 (
@@ -174,8 +174,7 @@ sub find_libs
         # to eval the check for subdir's. 
 
         my $abs
-        = eval { abs_path catpath $vol, ( catdir @dirpath, $base ), $empty }
-        || '';
+        = abs_path catpath $vol, ( catdir @dirpath, $base ), $empty;
 
         my $sub
         = $subdir
@@ -282,7 +281,7 @@ my $handle_args
 
     for( @{ $argz{ ignore } } )
     {
-      if( my $dir = eval { abs_path catdir $_, $base } )
+      if( my $dir = abs_path catdir $_, $base )
       {
         if( -d $dir )
         {
@@ -447,6 +446,15 @@ O/S and redundant symlinks.
     use FindBin::libs qw( subdir=perl5/frobnicate );
 
     use FindBin::libs qw( base=config subdir=mypackage subonly export );
+
+    # no harm in using this multiple times to use
+    # or export multple layers of libs.
+
+    use FindBin::libs qw( export                                            );
+    use FindBin::libs qw( export=found base=lib                             );
+    use FindBin::libs qw( export=binz  base=bin            ignore=/foo,/bar );
+    use FindBin::libs qw( export=junk  base=frobnicatorium                  );
+    use FindBin::libs qw( export       base=foobar                          );
 
 =head1 DESCRIPTION
 
