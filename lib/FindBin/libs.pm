@@ -85,7 +85,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.37';
+our $VERSION = '1.38';
 
 my %defaultz = 
 (
@@ -115,7 +115,7 @@ my %found = ();
 
 my %argz = ();
 
-my $verbose = 0;
+my $verbose = '';
 
 my $empty = q{};
 
@@ -169,12 +169,13 @@ sub find_libs
         # filesystems, and adding an empty basename on 
         # *nix is unnecessary.
         #
-        # HAK ALERT: the poor slobs stock on windog have an
+        # HAK ALERT: the poor slobs stuck on windog have an
         # abs_path that croaks on missing directories. have
         # to eval the check for subdir's. 
 
         my $abs
-        = abs_path catpath $vol, ( catdir @dirpath, $base ), $empty;
+        = eval { abs_path catpath $vol, ( catdir @dirpath, $base ), $empty }
+        || '';
 
         my $sub
         = $subdir
@@ -281,7 +282,7 @@ my $handle_args
 
     for( @{ $argz{ ignore } } )
     {
-      if( my $dir = abs_path catdir $_, $base )
+      if( my $dir = eval { abs_path catdir $_, $base } )
       {
         if( -d $dir )
         {
@@ -333,29 +334,19 @@ sub import
     if $verbose;
   }
 
-  if( $argz{use} )
+  if( $argz{use} && @libz )
   {
-    my @code = 
-    qw
-    (
-      {
-        package caller ;
-        use lib qw( list ) ;
-      }
-    );
+    # this obviously won't work if lib ever depends 
+    # on the caller's package.
+    #
+    # it does avoids issues with -T blowing up on the
+    # old eval technique.
 
-    # insert the caller's package and replace the "list" 
-    # token with the libs found.
+    require lib;
 
-    $code[2] = $caller;
-    splice @code, 7, 1, @libz;
+    $DB::single = 1;
 
-    my $code = join ' ', @code;
-
-    print STDERR "\n", 'Executing:', $code, ''
-    if $verbose;
-
-    eval $code
+    lib->import( @libz );
   }
 
   0

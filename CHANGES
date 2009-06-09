@@ -1,3 +1,17 @@
+1.38 Tue Jun  9 17:00:29 EDT 2009
+
+Catch: "-T" doesn't like eval-ed code. 
+Fix:
+    require lib;
+    lib->import( @lib_dirs )
+
+It doesn't seem as though lib depends on 
+the caller's namespace, so there isn't
+any harm in calling it this way. Otherwise
+I'll have to find some other way of working
+around -T.
+
+
 1.36 Mon Mar 31 19:06:25 EDT 2008
 
 Add tests for mulitple use or require + multiple
