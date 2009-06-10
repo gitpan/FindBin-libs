@@ -4,7 +4,7 @@ package Testophile;
 
 use strict;
 
-use Test::More;
+use Test::More tests => 5;
 
 $\ = "\n";
 $, = "\n\t";
@@ -30,8 +30,6 @@ use FindBin::libs qw( export       base=foobar                          );
 # clean up temp files on the way out.
 
 unlink './foobar';
-
-tests => 5;
 
 ok(   @lib,     '@lib exported'   );
 ok(   @found,   '@found exported' );

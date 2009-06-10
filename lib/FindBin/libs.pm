@@ -85,7 +85,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.38';
+our $VERSION = '1.40';
 
 my %defaultz = 
 (
@@ -197,6 +197,11 @@ sub find_libs
 
         pop @dirpath
     }
+
+    # HAK ALERT: the regex does nothing for security,
+    # just dodges -T.
+
+    @libz   = map { m{ (.+) }x } @libz;
 
     # caller gets back the existing lib paths 
     # (including volume) walking up the path 
@@ -343,8 +348,6 @@ sub import
     # old eval technique.
 
     require lib;
-
-    $DB::single = 1;
 
     lib->import( @libz );
   }

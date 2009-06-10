@@ -9,5 +9,7 @@ t/02.t
 t/03.t
 t/04.t
 t/05.t
+t/06.t
+t/07.t
 example/p5run
 META.yml                                 Module meta-data (added by MakeMaker)

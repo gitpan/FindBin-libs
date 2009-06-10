@@ -1,3 +1,13 @@
+1.40 Wed Jun 10 07:22:48 EDT 2009
+
+Blindly regex the lib's before returning them
+from find_libs. This avoids issues running 
+tainted.
+
+1.39 Tue Jun  9 18:14:02 EDT 2009
+
+Remove an extraneous $DB::single.
+
 1.38 Tue Jun  9 17:00:29 EDT 2009
 
 Catch: "-T" doesn't like eval-ed code. 
