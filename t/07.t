@@ -9,8 +9,6 @@ END     { rmdir './blib/foo'        }
 
 require FindBin::libs;
 
-print STDERR join "\n", '@INC:', @INC, '';
-
 FindBin::libs->import( qw( base=blib subdir=foo subonly ) );
 
 ok $INC[0] =~ m{/blib/foo$}, 'Found only foo subdir';

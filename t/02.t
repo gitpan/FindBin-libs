@@ -31,10 +31,10 @@ use FindBin::libs qw( export       base=foobar                          );
 
 unlink './foobar';
 
-ok(   @lib,     '@lib exported'   );
-ok(   @found,   '@found exported' );
-ok(   @binz,    '@binz exported'  );
-ok( ! @junk,    'empty @junk exported'  );
-ok( ! @foobar,  'empty @foobar exported' );
+ok  @lib,     '@lib exported';
+ok  @found,   '@found exported';
+ok  @binz,    '@binz exported';
+ok ! @junk,    'empty @junk exported';
+ok ! @foobar,  'empty @foobar exported';
 
 exit 0;

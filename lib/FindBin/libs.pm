@@ -198,11 +198,6 @@ sub find_libs
         pop @dirpath
     }
 
-    # HAK ALERT: the regex does nothing for security,
-    # just dodges -T.
-
-    @libz   = map { m{ (.+) }x } @libz;
-
     # caller gets back the existing lib paths 
     # (including volume) walking up the path 
     # from $FindBin::Bin -> root.
@@ -299,60 +294,67 @@ my $handle_args
 
 sub import
 {
-  &$handle_args;
+    &$handle_args;
 
-  my @libz = find_libs;
+    my @libz = find_libs;
 
-  my $caller = caller;
+    # HAK ALERT: the regex does nothing for security,
+    # just dodges -T. putting this down here instead
+    # of inside find_libs allows people to use saner
+    # untainting plans via find_libs.
 
-  if( $verbose || defined $argz{print} )
-  {
-    local $\ = "\n";
-    local $, = "\n\t";
+    @libz   = map { m{ (.+) }x } @libz;
 
-    print STDERR "Found */$argz{ base }:", @libz
-  }
-
-  if( $argz{export} )
-  {
     my $caller = caller;
 
-    print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
-    if $verbose;
+    if( $verbose || defined $argz{print} )
+    {
+        local $\ = "\n";
+        local $, = "\n\t";
 
-    # Symbol this is cleaner than "no strict" 
-    # for installing the array.
+        print STDERR "Found */$argz{ base }:", @libz
+    }
 
-    my $ref = qualify_to_ref $argz{ export }, $caller;
+    if( $argz{export} )
+    {
+        my $caller = caller;
 
-    *$ref = \@libz;
-  }
+        print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
+        if $verbose;
 
-  if( defined $argz{ p5lib } )
-  {
-    # stuff the lib's found at the front of $ENV{ PERL5LIB }
+        # Symbol this is cleaner than "no strict" 
+        # for installing the array.
 
-    ( substr $ENV{ PERL5LIB }, 0, 0 ) = join ':', @libz, ''
-    if @libz;
+        my $ref = qualify_to_ref $argz{ export }, $caller;
 
-    print STDERR "\nUpdated PERL5LIB:\t$ENV{ PERL5LIB }\n"
-    if $verbose;
-  }
+        *$ref = \@libz;
+    }
 
-  if( $argz{use} && @libz )
-  {
-    # this obviously won't work if lib ever depends 
-    # on the caller's package.
-    #
-    # it does avoids issues with -T blowing up on the
-    # old eval technique.
+    if( defined $argz{ p5lib } )
+    {
+        # stuff the lib's found at the front of $ENV{ PERL5LIB }
 
-    require lib;
+        ( substr $ENV{ PERL5LIB }, 0, 0 ) = join ':', @libz, ''
+        if @libz;
 
-    lib->import( @libz );
-  }
+        print STDERR "\nUpdated PERL5LIB:\t$ENV{ PERL5LIB }\n"
+        if $verbose;
+    }
 
-  0
+    if( $argz{use} && @libz )
+    {
+        # this obviously won't work if lib ever depends 
+        # on the caller's package.
+        #
+        # it does avoids issues with -T blowing up on the
+        # old eval technique.
+
+        require lib;
+
+        lib->import( @libz );
+    }
+
+    0
 }
 
 # keep require happy
@@ -823,7 +825,6 @@ File::Spec code that probably looks pretty much like what
     use FindBin::libs qw( base=Mylib )
 
 does anyway.
-
 
 =head2 FindBin::libs-1.2+ uses File::Spec
 

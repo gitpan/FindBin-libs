@@ -2,17 +2,12 @@ package Testophile;
 
 use strict;
 
-use Test::More tests => 2;
+use FindBin qw( $Bin );
 
-BEGIN   { mkdir './blib/foo', 0555  }
-END     { rmdir './blib/foo'        }
+use FindBin::libs qw( base=lib subdir=FindBin subonly );
 
-use FindBin::libs qw( base=blib subdir=foo subonly );
-use FindBin::libs;
+use Test::More tests => 1;
 
-print join "\n", '@INC:', @INC, '';
-
-ok $INC[1] =~ m{/blib/foo$}, 'Found foo subdir';
-ok $INC[0] =~ m{/lib$}, 'Added lib dir';
+ok $INC[0] =~ m{/lib/FindBin $}x, "$INC[0]";
 
 __END__
