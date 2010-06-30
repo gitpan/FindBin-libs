@@ -12,6 +12,8 @@ END   { -d './lib/foo' && rmdir './lib/foo'        or die $! }
 
 use FindBin::libs qw( export subdir=foo );
 
-ok ( grep /foo/, @lib ), 'Found foo subdir';
+my $found   = grep m{/foo}, @lib;
+
+ok $found, 'Found foo subdir';
 
 __END__

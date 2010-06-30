@@ -85,7 +85,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.40';
+our $VERSION = '1.42';
 
 my %defaultz = 
 (
@@ -141,8 +141,11 @@ sub find_libs
     # FindBin that does this. fix is quick enough: 
     # strip the trailing '/'.
     #
-    # using a regex to extract the value untaints it.
-    # after that split path can grab the directory 
+    # using a regex to extract the value untaints it
+    # (not useful for anything much, just helps the
+    # poor slobs stuck in taint mode).
+    #
+    # after that splitpath can grab the directory 
     # portion for future use.
 
     my ( $Bin ) = $argz{ Bin } =~ m{^ (.+) }xs;
@@ -225,14 +228,9 @@ my $handle_args
     {
         my ( $k, $v ) = split '=', $_, 2;
 
-        if( $k =~ s{^(?:!|no)}{} )
-        {
-            $k => undef
-        }
-        else
-        {
-            $k => ( $v || '' )
-        }
+        $k =~ s{^ (?:!|no) }{}x
+        ? ( $k => undef )
+        : ( $k => ( $v || '' )  )
     }
     @_;
 
@@ -317,8 +315,6 @@ sub import
 
     if( $argz{export} )
     {
-        my $caller = caller;
-
         print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
         if $verbose;
 
@@ -379,7 +375,7 @@ O/S and redundant symlinks.
 
     # same as above with explicit defaults.
 
-    use FindBin::libs qw( base=lib use noexport noprint );
+    use FindBin::libs qw( base=lib use=1 noexport noprint );
 
     # print the lib dir's before using them.
 

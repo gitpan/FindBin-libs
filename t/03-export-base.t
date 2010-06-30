@@ -3,6 +3,7 @@
 package Testophile;
 
 use strict;
+no warnings;    # the is the qw() for a reason.
 
 use Test::More tests => 5;
 
