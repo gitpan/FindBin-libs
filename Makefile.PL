@@ -5,7 +5,7 @@ WriteMakefile
 (
 
   NAME          => 'FindBin::libs',
-  VERSION       => '1.5',
+  VERSION       => '1.51',
   ABSTRACT_FROM => 'lib/FindBin/libs.pm',
   PREREQ_PM     =>
   {

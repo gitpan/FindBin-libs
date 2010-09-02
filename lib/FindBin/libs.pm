@@ -85,7 +85,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.4100';
+our $VERSION = '1.5100';
 
 my %defaultz = 
 (
