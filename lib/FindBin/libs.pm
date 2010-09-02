@@ -85,13 +85,13 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.42';
+our $VERSION = '1.4100';
 
 my %defaultz = 
 (
     Bin     => $FindBin::Bin,
     base    => 'lib',
-    use     => 1,
+    use     => undef,
 
     subdir  => '',      # add this subdir also if found.
     subonly => undef,   # leave out lib's, use only subdir.
@@ -236,13 +236,24 @@ my $handle_args
 
     # stuff "debug=1" into your arguments and perl -d will stop here.
 
-    $DB::single = 1 if $argz{debug};
+    $DB::single = 1 if defined $argz{debug};
 
-    # use lib behavior is turned off by default if export or
-    # perl5lib udpate are requested.
+    # default if nothing is supplied is to use the result;
+    # otherwise, without use supplied either of export or
+    # p5lib will turn off use.
 
-    exists $argz{use} or $defaultz{use} = ! exists $argz{export};
-    exists $argz{use} or $defaultz{use} = ! exists $argz{p5lib};
+    if( exists $argz{ use } )
+    {
+        # nothing further to do
+    }
+    elsif( defined $argz{ export } || defined $argz{ p5lib } )
+    {
+        $argz{ use } = undef;
+    }
+    else
+    {
+        $argz{ use } = 1;
+    }
 
     # now apply the defaults, then sanity check the result.
     # base is a special case since it always has to exist.
@@ -315,6 +326,8 @@ sub import
 
     if( $argz{export} )
     {
+        my $caller = caller;
+
         print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
         if $verbose;
 
@@ -404,9 +417,9 @@ O/S and redundant symlinks.
 
     # use and export are not exclusive:
 
-    use FindBin::libs qw( use export );           # do both
-    use FindBin::libs qw( nouse noexport print ); # print only
-    use FindBin::libs qw( nouse noexport );       # do nothting at all
+    use FindBin::libs qw( use export            ); # do both
+    use FindBin::libs qw( nouse noexport print  ); # print only
+    use FindBin::libs qw( nouse noexport        ); # do nothting at all
 
     # print a few interesting messages about the 
     # items found.
@@ -438,6 +451,16 @@ O/S and redundant symlinks.
     use FindBin::libs qw( subdir=perl5/frobnicate );
 
     use FindBin::libs qw( base=config subdir=mypackage subonly export );
+
+    # base and subonly are also useful if your 
+    # project is stored in multiple git 
+    # repositories. 
+    #
+    # say you need libs under api_foo/lib from api_bar: a
+    # base of the git repository directory with subdir of
+    # lib and subonly will pull in those lib dirs.
+
+    use FindBin::libs qw( base=api_foo subdir=lib subonly );
 
     # no harm in using this multiple times to use
     # or export multple layers of libs.

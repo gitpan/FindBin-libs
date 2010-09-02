@@ -1,8 +1,10 @@
-1.42 Wed Jun 30 13:13:57 EDT 2010
+1.43 Thu Sep  2 12:34:52 EDT 2010
 
-Minor test cleanups -- including saner names, 
-avoiding extraneous warnings during tests.
+Fix bug that required use=1 instead of "use" alone in 
+argument processing.
 
+Add POD for mixing git repositories using git repository
+as base with  ( subdir=lib subonly ).
 
 1.41 Sat Jun 13 23:02:36 EDT 2009
 
