@@ -1,3 +1,16 @@
+1.52 Fri Sep  9 17:10:29 EDT 2011
+
+Add "realbin" option that bases the lookup on 
+$FindBin::RealBin. This allows a command line
+executable to be symlinked back to wherever it
+lives and find configuration files adjacent
+to the "real" file. This saves having to symlink
+the configuration files next to the symlinked
+executable.
+
+Up the use to v5.10 now that 5.8 is no longer
+supported.
+
 1.51    Thu Sep  2 18:26:55 EDT 2010
 
 Fix MANIFEST.

@@ -22,7 +22,7 @@
 
 package FindBin::libs;
 
-use 5.00601;
+use v5.12;
 
 use strict;
 
@@ -89,7 +89,6 @@ our $VERSION = '1.5100';
 
 my %defaultz = 
 (
-    Bin     => $FindBin::Bin,
     base    => 'lib',
     use     => undef,
 
@@ -254,6 +253,12 @@ my $handle_args
     {
         $argz{ use } = 1;
     }
+
+    local $defaultz{ Bin }
+    = exists $argz{ realbin }
+    ? $FindBin::RealBin
+    : $FindBin::Bin
+    ;
 
     # now apply the defaults, then sanity check the result.
     # base is a special case since it always has to exist.
