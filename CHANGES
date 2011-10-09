@@ -1,3 +1,10 @@
+
+1.53 Sun Oct  9 11:02:50 CDT 2011
+
+oops... should have upped the module version number
+when I upped the Perl version... also makes more sense
+to use v-strings at this point with v5.12.
+
 1.52 Fri Sep  9 17:10:29 EDT 2011
 
 Add "realbin" option that bases the lookup on 

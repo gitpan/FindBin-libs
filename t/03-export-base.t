@@ -2,7 +2,8 @@
 
 package Testophile;
 
-use strict;
+use v5.12;
+no warnings;    # avoid extraneous nastygrams about qw
 
 use Test::More tests => 5;
 

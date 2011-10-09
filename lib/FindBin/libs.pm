@@ -24,18 +24,12 @@ package FindBin::libs;
 
 use v5.12;
 
-use strict;
-
-use Carp qw( &croak );
-
 use FindBin;
-
 use Symbol;
 
-# both of these are in the standard distro and 
-# should be available.
-
 use File::Basename;
+
+use Carp qw( &croak );
 
 use File::Spec::Functions
 qw
@@ -85,7 +79,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.5100';
+our $VERSION = v1.53;
 
 my %defaultz = 
 (
@@ -331,8 +325,6 @@ sub import
 
     if( $argz{export} )
     {
-        my $caller = caller;
-
         print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
         if $verbose;
 

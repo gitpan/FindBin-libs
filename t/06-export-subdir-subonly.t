@@ -1,6 +1,6 @@
 package Testophile;
 
-use strict;
+use v5.12;
 
 $\ = "\n";
 $, = "\n\t";
