@@ -1,6 +1,6 @@
 package Testophile;
 
-use v5.12;
+use v5.10;
 
 use Test::More tests => 1;
 

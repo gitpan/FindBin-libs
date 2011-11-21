@@ -22,7 +22,7 @@
 
 package FindBin::libs;
 
-use v5.12;
+use v5.10;
 
 use FindBin;
 use Symbol;
@@ -79,7 +79,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = v1.53;
+our $VERSION = v1.54;
 
 my %defaultz = 
 (
