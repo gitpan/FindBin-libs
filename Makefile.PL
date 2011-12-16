@@ -4,11 +4,14 @@ use ExtUtils::MakeMaker;
 WriteMakefile
 (
 
-  NAME          => 'FindBin::libs',
-  VERSION_FROM  => 'lib/FindBin/libs.pm',
-  ABSTRACT_FROM => 'lib/FindBin/libs.pm',
-  PREREQ_PM     =>
-  {
+    # Note to self: use VERSION here since v-strings
+    # botch MakeMaker and the modules use v-strings.
+
+    NAME          => 'FindBin::libs',
+    VERSION       => '1.59',
+    ABSTRACT_FROM => 'lib/FindBin/libs.pm',
+    PREREQ_PM     =>
+    {
     # standard distro, particular versions 
     # are unlikely to cause pain.
 
@@ -20,6 +23,6 @@ WriteMakefile
     Symbol          => 0,
     'File::Spec'    => 0,
     'Test::More'    => 0,
-  },
+    },
 
 );
