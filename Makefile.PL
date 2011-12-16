@@ -1,11 +1,11 @@
-use v5.0.12;
+use v5.8;
 use ExtUtils::MakeMaker;
 
 WriteMakefile
 (
 
   NAME          => 'FindBin::libs',
-  VERSION       => '1.55',
+  VERSION       => '1.56',
   ABSTRACT_FROM => 'lib/FindBin/libs.pm',
   PREREQ_PM     =>
   {

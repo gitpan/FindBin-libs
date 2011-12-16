@@ -1,3 +1,11 @@
+1.56 Thu Nov 24 10:26:00 CST 2011
+
+Added "use if $^V < v5.12" to pull in version
+of code useful with v5.8 and later. Basically
+this just puts a rather thin layer in front of
+the older code vs. newer (which will use switches
+for some of the logic, among other things). 
+
 1.55 Wed Nov 23 16:50:57 CST 2011
 
 Fix version-string bug in Makefile.PL
