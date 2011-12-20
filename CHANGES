@@ -1,3 +1,8 @@
+1.59 Tue Dec 20 17:05:10 CST 2011
+
+Fix typo; update tests to expliclty include
+both of the back-end modules.
+
 1.58 Fri Dec 16 13:06:42 CST 2011
 
 Hopefully the metadata is un-screwed up enough for

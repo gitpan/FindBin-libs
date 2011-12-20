@@ -10,15 +10,13 @@
 
 package FindBin::libs;
 
-our $VERSION=1.58;
+our $VERSION=1.59;
 
 # use the older code suitable for v5.8 if we are 
 # running on anything before v5.12.
 
 BEGIN
 {
-$DB::single = 1;
-
     $^V < v5.12
     ? require FindBin::libs_5_8
     : require FindBin::libs_curr
