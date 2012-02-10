@@ -1,3 +1,14 @@
+
+1.61 Fri Feb 10 11:10:30 EST 2012
+
+$^V does not compare gracefully prior to 5.10 or
+5.12 (not sure which). Either way, this leaves the
+comparison of $^V useless. Choices are unpack and
+printf or use Config to get the version.
+
+So... libs.pm now uses Config and version to generate
+comparable objects. 
+
 1.59 Tue Dec 20 17:05:10 CST 2011
 
 Fix typo; update tests to expliclty include

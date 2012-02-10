@@ -10,14 +10,23 @@
 
 package FindBin::libs;
 
-our $VERSION=1.59;
+use strict;
+use version;
+
+our $VERSION=1.50;
 
 # use the older code suitable for v5.8 if we are 
 # running on anything before v5.12.
 
 BEGIN
 {
-    $^V < v5.12
+$DB::single = 1;
+    use Config;
+
+    my $cutoff  = version->new( 'v5.12' );
+    my $running = version->new( scalar $Config{ version } );
+
+    $running < $cutoff
     ? require FindBin::libs_5_8
     : require FindBin::libs_curr
     ;
