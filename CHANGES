@@ -1,3 +1,13 @@
+1.62 Tue Feb 14 14:11:17 EST 2012
+
+Switch to Module::Build. This allows installing a 
+single file based on $^V of the Perl used for
+installation. This leaves a single "libs.pm" 
+insalled as either the source's 5.8 version or 
+the newer one for 5.10 or later.
+
+I have no way to test this on Windows or VMS;
+any feedback would be appreciated.
 
 1.61 Fri Feb 10 11:10:30 EST 2012
 
