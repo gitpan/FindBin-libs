@@ -1,3 +1,9 @@
+1.63 
+
+Avoid indexing the older version by splitting the
+package name onto a separate line in the source. 
+
+
 1.62 Tue Feb 14 14:11:17 EST 2012
 
 Switch to Module::Build. This allows installing a 
