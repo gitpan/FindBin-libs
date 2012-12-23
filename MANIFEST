@@ -4,14 +4,13 @@ MANIFEST
 Build.PL
 lib/FindBin/libs_5_8.pm
 lib/FindBin/libs_curr.pm
+example/p5run
 t/01-use-ok.t
 t/02-export-base.t
-t/03-export-base.t
 t/04-export-nouse-base.t
 t/05-export-subdir.t
 t/06-base-subdir-subonly.t
-t/06-export-subdir-subonly.t
+t/07-export-subdir-subonly.t
 t/08-base-subdir-subonly.t
-example/p5run
 META.yml
 META.json

@@ -2,6 +2,8 @@ package Testophile;
 
 use v5.8;
 
+use File::Spec::Functions  qw( catpath );
+
 use Test::More tests => 2;
 
 BEGIN   { mkdir './blib/foo', 0555  }
@@ -11,7 +13,9 @@ require FindBin::libs;
 
 FindBin::libs->import( qw( base=blib subdir=foo subonly ) );
 
-ok $INC[0] =~ m{/blib/foo$}, 'Found only foo subdir';
+my $expect  = catpath '' => qw( blib foo );
+
+ok $INC[0] =~ m{$expect $}x, 'Found only foo subdir';
 
 FindBin::libs->import;
 

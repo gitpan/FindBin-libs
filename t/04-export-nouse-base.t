@@ -2,6 +2,12 @@ package Testophile;
 
 use v5.8;
 
+use Test::More;
+
+use Cwd         qw( abs_path        );
+use List::Util  qw( first           );
+use Symbol      qw( qualify_to_ref  );
+
 $\ = "\n";
 $, = "\n\t";
 
@@ -12,17 +18,53 @@ $, = "\n\t";
 # likely case is that adding it to the the current
 # directory is likely to work.
 
-BEGIN   { -d './bin' || mkdir './bin', 0555 or die $!  }
-END     { -d './bin' && rmdir './bin'       or die $!  }
+my @basz    = qw( bin lib );
 
+plan tests => 2 * @basz;
 
-use FindBin::libs qw( noprint export nouse ignore= base=lib );
-use FindBin::libs qw(   print export nouse ignore= base=bin );
+require FindBin::libs;
 
-use Test::More tests => 2;
+for my $base ( @basz )
+{
+    my $dir = "/$base";
 
-ok( @lib,		'@lib exported' );
-ok( @bin,		'@bin exported' );
+    SKIP:
+    {
+        -e $dir
+        or skip "System lacks '$dir' directory" => 2;
 
+        eval
+        {
+            FindBin::libs->import
+            (
+                "base=$base", 
+                qw
+                (
+                    noprint
+                    export
+                    nouse
+                    ignore=
+                )
+            );
 
-exit 0;
+            1
+        }
+        or skip "Failed search: '$base', $@" => 2;
+
+        my $expect  = abs_path $dir;
+        my $ref     = qualify_to_ref $base;
+
+        ok @{ *$ref }, "Installed $ref";
+
+        first { $_ eq $expect } @{ *$ref }
+        ? pass "Found '$expect' (/lib)"
+        : fail "Missing: '/lib'"
+        ;
+    }
+}
+
+# this is not a module
+
+0
+
+__END__

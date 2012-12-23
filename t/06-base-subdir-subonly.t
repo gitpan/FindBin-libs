@@ -4,10 +4,14 @@ use v5.8;
 
 use FindBin qw( $Bin );
 
+use File::Spec::Functions  qw( catpath );
+
 use FindBin::libs qw( base=lib subdir=FindBin subonly );
 
 use Test::More tests => 1;
 
-ok $INC[0] =~ m{/lib/FindBin $}x, "$INC[0]";
+my $expect  = catpath '' => qw( lib FindBin );
+
+ok $INC[0] =~ /$expect $/x, "$INC[0] ($expect)";
 
 __END__

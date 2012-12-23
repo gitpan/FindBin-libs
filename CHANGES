@@ -1,7 +1,25 @@
+1.65.1 Sat Dec 22 22:47:55 CST 2012
+
+Pod Errors.
+
+
+
+1.65
+
+Skip unusable tests on windows; use abs_path for
+path checks to avoid symlinks botching the tests.
+
+Cleanups in libs_curr.pm to use 5.10 features.
+
+Add "blib" option to prefer "blib" to "lib" at the 
+first level only where blib exists, mainly for use
+in testing.
+
 1.64
 
 Update Build.PL to use '0' instead of '>0' for the
 dependencies. 
+
 
 1.63 
 

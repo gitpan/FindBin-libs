@@ -6,7 +6,8 @@ use v5.8;
 
 no warnings;    # avoid extraneous nastygrams about qw
 
-use Test::More tests => 5;
+use Symbol;
+use Test::More;
 
 $\ = "\n";
 $, = "\n\t";
@@ -23,20 +24,36 @@ BEGIN
     eval { symlink qw( /nonexistant/path/to/foobar ./foobar ) }
 }
 
-use FindBin::libs qw( export                                            );
-use FindBin::libs qw( export=found base=lib                             );
-use FindBin::libs qw( export=binz  base=bin            ignore=/foo,/bar );
-use FindBin::libs qw( export=junk  base=frobnicatorium                  );
-use FindBin::libs qw( export       base=foobar                          );
+END
+{
+    -e './foobar' && unlink './foobar';
+}
 
-# clean up temp files on the way out.
+use FindBin::libs qw( export                            );
+use FindBin::libs qw( export=found base=blib            );
+use FindBin::libs qw( export=junk  base=frobnicatorium  );
+use FindBin::libs qw( export       base=foobar          );
 
-unlink './foobar';
+my %testz
+= qw
+(
+    lib     1
+    found   1
+    junk    0
+    foobar  0
+);
 
-ok  @lib,     '@lib exported';
-ok  @found,   '@found exported';
-ok  @binz,    '@binz exported';
-ok ! @junk,    'empty @junk exported';
-ok ! @foobar,  'empty @foobar exported';
+plan tests => 1 * keys %testz;
+
+while( my ($name, $true) = each %testz )
+{
+    my $dest    = qualify        $name;
+    my $ref     = qualify_to_ref $dest;
+
+    $true 
+    ? ok   @{ *$ref }, "Non-empty: $dest"
+    : ok ! @{ *$ref }, "Empty: $dest"
+    ;
+}
 
 exit 0;

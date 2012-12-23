@@ -562,7 +562,7 @@ for configuring packages:
 
     use FindBin::libs qw( export base=config subonly=mypackage );
 
-Will leave @config with any "mypacakge" holding
+Will leave @config with any "mypackage" holding
 any "mypackage" subdir's.
 
 =head3 Setting PERL5LIB: p5lib
@@ -783,6 +783,8 @@ allow:
 
 to check the code.
 
+=back 
+
 =head1 Notes
 
 =head2 Alternatives
@@ -791,6 +793,8 @@ FindBin::libs was developed to avoid pitfalls with
 the items listed below. As of FindBin::libs-1.20,
 this is also mutli-platform, where other techniques
 may be limited to *NIX or at least less portable.
+
+=over 4
 
 =item PERL5LIBS
 
@@ -846,6 +850,8 @@ File::Spec code that probably looks pretty much like what
     use FindBin::libs qw( base=Mylib )
 
 does anyway.
+
+=back
 
 =head2 FindBin::libs-1.2+ uses File::Spec
 
@@ -943,6 +949,8 @@ I can make this work by managing the installation
 rather than checking this every time at startup.
 
 For the moment, at least, this seems to work.
+
+=back 
 
 =head1 AUTHOR
 
