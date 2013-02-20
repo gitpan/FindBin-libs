@@ -15,10 +15,10 @@ FindBin::libs->import( qw( base=blib subdir=foo subonly ) );
 
 my $expect  = catpath '' => qw( blib foo );
 
-ok $INC[0] =~ m{$expect $}x, 'Found only foo subdir';
+like $INC[0], qr{\Q$expect\E $}x, 'Found only foo subdir';
 
 FindBin::libs->import;
 
-ok $INC[0] =~ m{/lib$}, 'Added lib dir';
+like $INC[0], qr{\b lib $}x, 'Added lib dir';
 
 __END__

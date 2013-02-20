@@ -12,6 +12,6 @@ use Test::More tests => 1;
 
 my $expect  = catpath '' => qw( lib FindBin );
 
-ok $INC[0] =~ /$expect $/x, "$INC[0] ($expect)";
+ok $INC[0] =~ /\Q$expect\E $/x, "$INC[0] ($expect)";
 
 __END__
