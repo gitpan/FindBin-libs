@@ -1,3 +1,8 @@
+
+1.7 Thu Mar 14 15:23:30 GMT 2013
+
+Up version to 1.7, avoids issues with mutliple dots.
+
 1.65.2 Tue Feb 19 20:00:27 CST 2013
 
 Fix tests for Windows (thanks to Alexandr Ciornii 
