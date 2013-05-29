@@ -4,7 +4,7 @@
       "Steven Lembark <lembark@wrkhors.com"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Module::Build version 0.4005, CPAN::Meta::Converter version 2.130880",
    "license" : [
       "perl_5"
    ],
@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.4003"
+            "Module::Build" : "0.4005"
          }
       },
       "runtime" : {
@@ -24,9 +24,7 @@
             "Carp" : "0",
             "Cwd" : "0",
             "File::Spec" : "0",
-            "File::Temp" : "0",
             "FindBin" : "0",
-            "List::Util" : "0",
             "Symbol" : "0",
             "Test::More" : "0",
             "strict" : "0"
@@ -45,5 +43,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "1.7"
+   "version" : "1.65"
 }

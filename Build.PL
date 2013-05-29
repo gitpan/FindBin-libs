@@ -28,7 +28,7 @@ my @build_argz  =
     (
         module_name     FindBin::libs
         license         perl
-        dist_version    1.7
+        dist_version    1.65
     ),
 
     pm_files =>
@@ -49,8 +49,6 @@ my @build_argz  =
             FindBin         0
             Symbol          0
             File::Spec      0
-            File::Temp      0
-            List::Util      0
             Test::More      0
 
         )

@@ -1,29 +1,6 @@
-
-1.7 Thu Mar 14 15:23:30 GMT 2013
-
-Up version to 1.7, avoids issues with mutliple dots.
-
-1.65.2 Tue Feb 19 20:00:27 CST 2013
-
-Fix tests for Windows (thanks to Alexandr Ciornii 
-for patches).
-
-1.65.1 Sat Dec 22 22:47:55 CST 2012
-
-Pod Errors.
-
-
-
 1.65
 
-Skip unusable tests on windows; use abs_path for
-path checks to avoid symlinks botching the tests.
-
-Cleanups in libs_curr.pm to use 5.10 features.
-
-Add "blib" option to prefer "blib" to "lib" at the 
-first level only where blib exists, mainly for use
-in testing.
+Cleanups for Perl v5.18
 
 1.64
 
