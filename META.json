@@ -4,7 +4,7 @@
       "Steven Lembark <lembark@wrkhors.com"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4005, CPAN::Meta::Converter version 2.130880",
+   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.130880",
    "license" : [
       "perl_5"
    ],
@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.4005"
+            "Module::Build" : "0.4003"
          }
       },
       "runtime" : {
@@ -45,5 +45,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "1.66"
+   "version" : "1.8"
 }

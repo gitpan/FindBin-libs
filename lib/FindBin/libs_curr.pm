@@ -226,15 +226,15 @@ my $handle_args
         my ( $k, $v ) = split '=', $_, 2;
 
         defined $v
+        or
+        first{ $k eq $_ } @use_undef 
         or 
-        first { $_ eq $k } @use_undef 
-        or 
-        $v  //= 1;
+        $v //= 1;
 
         # "no" inverts the sense of the test.
 
-        index $k, 'no'
-        or $v  = ! $v;
+        $k =~ s{^no}{}
+        and $v  = ! $v;
 
         ( $k => $v )
     }
