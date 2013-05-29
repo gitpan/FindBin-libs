@@ -27,8 +27,9 @@ use Symbol;
 
 use File::Basename;
 
-use Carp    qw( croak           );
-use Symbol  qw( qualify_to_ref  );
+use Carp        qw( croak           );
+use List::Util  qw( first           );
+use Symbol      qw( qualify_to_ref  );
 
 use File::Spec::Functions
 qw
@@ -58,11 +59,9 @@ BEGIN
     unless( eval {abs_path '//';  abs_path cwd } )
     {
         # abs_path seems to be having problems,
-        # fix is to stub it out. ref and sub are
-        # syntatic sugar, but do you really want
-        # to see it all on one line???
+        # fix is to stub it out.
         #
-        # undef avoids re-defining subroutine nastygram.
+        # undef avoids nastygram.
 
         my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
 
@@ -84,6 +83,7 @@ my %defaultz =
 (
     base    => 'lib',
     use     => undef,
+    blib    => undef,   # prefer ./blib at the first level
 
     subdir  => '',      # add this subdir also if found.
     subonly => undef,   # leave out lib's, use only subdir.
@@ -91,12 +91,14 @@ my %defaultz =
     verbose => undef,   # boolean: print inputs, results.
     debug   => undef,   # boolean: set internal breakpoints.
 
-    print   => undef,   # display the results
+    print   => 1,       # display the results
 
     p5lib   => undef,   # prefix PERL5LIB with the results
 
     ignore => '/,/usr', # dir's to skip looking for ./lib
 );
+
+my @use_undef = qw( export ignore );
 
 # only new directories are used, ignore pre-loads
 # this with unwanted values.
@@ -139,10 +141,10 @@ my $find_libs
     # after that splitpath can grab the directory 
     # portion for future use.
 
-    my ( $Bin ) = $argz{ Bin } =~ m{^ (.+) }xs;
+    my ( $Bin ) = ( $argz{ Bin } =~ m{^ (.+) }xs );
 
     print STDERR "\nSearching $Bin for '$base'...\n"
-        if $verbose;
+    if $verbose;
 
     my( $vol, $dir ) = splitpath $Bin, 1;
 
@@ -168,7 +170,11 @@ my $find_libs
         # to eval the check for subdir's. 
 
         my $abs
-        = eval { abs_path catpath $vol, ( catdir @dirpath, $base ), $empty }
+        = eval
+        {
+            abs_path
+            catpath $vol, ( catdir @dirpath, $base ), $empty
+        }
         || '';
 
         my $sub
@@ -183,7 +189,7 @@ my $find_libs
         {
             if( $dir && -d $dir && ! exists $found{ $dir } )
             {
-                $found{ $dir } = 1;
+                $found{ $dir } = ();
 
                 push @libz, $dir;
             }
@@ -219,15 +225,24 @@ my $handle_args
     {
         my ( $k, $v ) = split '=', $_, 2;
 
-        $k =~ s{^ (?:!|no) }{}x
-        ? ( $k => undef )
-        : ( $k => ( $v || '' )  )
+        defined $v
+        or 
+        first { $_ eq $k } @use_undef 
+        or 
+        $v  //= 1;
+
+        # "no" inverts the sense of the test.
+
+        index $k, 'no'
+        or $v  = ! $v;
+
+        ( $k => $v )
     }
     @_;
 
     # stuff "debug=1" into your arguments and perl -d will stop here.
 
-    $DB::single = 1 if defined $argz{debug};
+    $DB::single = 1 if defined $argz{ debug };
 
     # default if nothing is supplied is to use the result;
     # otherwise, without use supplied either of export or
@@ -235,15 +250,15 @@ my $handle_args
 
     if( exists $argz{ use } )
     {
-        # nothing further to do
+    # nothing further to do
     }
     elsif( defined $argz{ export } || defined $argz{ p5lib } )
     {
-        $argz{ use } = undef;
+    $argz{ use } = undef;
     }
     else
     {
-        $argz{ use } = 1;
+    $argz{ use } = 1;
     }
 
     local $defaultz{ Bin }
@@ -255,27 +270,34 @@ my $handle_args
     # now apply the defaults, then sanity check the result.
     # base is a special case since it always has to exist.
     #
-    # if $argz{export} is defined but false then it takes
-    # its default from $argz{base}.
+    # if $argz{ export } is defined but false then it takes
+    # its default from $argz{ base }.
 
-    exists $argz{$_} or $argz{$_} = $defaultz{$_}
-    for keys %defaultz;
+    while( my($k,$v) = each %defaultz )
+    {
+    # //= doesn't work here since undef may be a 
+    # legit default.
 
-    exists $argz{base} && $argz{base} 
+    exists $argz{ $k }
+    or
+    $argz{ $k } = $v;
+    }
+
+    exists $argz{ base } && $argz{ base } 
     or croak "Bogus FindBin::libs: missing/false base argument, should be 'base=NAME'";
 
-    defined $argz{export} and $argz{export} ||= $argz{base};
+    exists $argz{ export }
+    and
+    $argz{ export } //= $argz{ base };
 
     $argz{ ignore } =
     [
-        grep { $_ }
-        split /\s*,\s*/,
-        $argz{ignore}
+        grep { $_ } split /\s*,\s*/, $argz{ ignore }
     ];
 
-    $verbose = defined $argz{verbose};
+    $verbose = defined $argz{ verbose };
 
-    my $base = $argz{base};
+    my $base = $argz{ base };
 
     # now locate the libraries.
     #
@@ -288,13 +310,13 @@ my $handle_args
 
     for( @{ $argz{ ignore } } )
     {
-      if( my $dir = eval { abs_path catdir $_, $base } )
-      {
-        if( -d $dir )
+        if( my $dir = eval { abs_path catdir $_, $base } )
         {
-          $found{ $dir } = 1;
+            if( -d $dir )
+            {
+                $found{ $dir } = 1;
+            }
         }
-      }
     }
 };
 
@@ -313,23 +335,25 @@ sub import
 
     my $caller = caller;
 
-    if( $verbose || defined $argz{print} )
+    if( $verbose || defined $argz{ print } )
     {
         local $\ = "\n";
         local $, = "\n\t";
 
         print STDERR "Found */$argz{ base }:", @libz
+        if $verbose;
     }
 
-    if( $argz{export} )
+    if( $argz{ export } )
     {
-        print STDERR join '', "\nExporting: @", $caller, '::', $argz{export}, "\n"
+        my $dest    = qualify        $argz{ export }, $caller;
+        my $ref     = qualify_to_ref $dest;
+
+        print STDERR "\nExporting: \@$dest\n"
         if $verbose;
 
         # Symbol this is cleaner than "no strict" 
         # for installing the array.
-
-        my $ref = qualify_to_ref $argz{ export }, $caller;
 
         *$ref = \@libz;
     }
@@ -345,7 +369,7 @@ sub import
         if $verbose;
     }
 
-    if( $argz{use} && @libz )
+    if( $argz{ use } && @libz )
     {
         # this obviously won't work if lib ever depends 
         # on the caller's package.
@@ -556,7 +580,7 @@ for configuring packages:
 
     use FindBin::libs qw( export base=config subonly=mypackage );
 
-Will leave @config with any "mypacakge" holding
+Will leave @config with any "mypackage" holding
 any "mypackage" subdir's.
 
 =head3 Setting PERL5LIB: p5lib
@@ -777,6 +801,8 @@ allow:
 
 to check the code.
 
+=back
+
 =head1 Notes
 
 =head2 Alternatives
@@ -785,6 +811,8 @@ FindBin::libs was developed to avoid pitfalls with
 the items listed below. As of FindBin::libs-1.20,
 this is also mutli-platform, where other techniques
 may be limited to *NIX or at least less portable.
+
+=over 4
 
 =item PERL5LIBS
 
@@ -840,6 +868,8 @@ File::Spec code that probably looks pretty much like what
     use FindBin::libs qw( base=Mylib )
 
 does anyway.
+
+=back
 
 =head2 FindBin::libs-1.2+ uses File::Spec
 
@@ -937,6 +967,8 @@ I can make this work by managing the installation
 rather than checking this every time at startup.
 
 For the moment, at least, this seems to work.
+
+=back
 
 =head1 AUTHOR
 

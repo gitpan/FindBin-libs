@@ -1,6 +1,26 @@
-1.65
+1.66 Tue May 28 20:56:04 CDT 2013
 
 Cleanups for Perl v5.18
+
+1.65.2 Tue Feb 19 20:00:27 CST 2013
+
+Fix tests for Windows (thanks to Alexandr Ciornii 
+for patches).
+
+1.65.1 Sat Dec 22 22:47:55 CST 2012
+
+Pod Errors.
+
+1.65
+
+Skip unusable tests on windows; use abs_path for
+path checks to avoid symlinks botching the tests.
+
+Cleanups in libs_curr.pm to use 5.10 features.
+
+Add "blib" option to prefer "blib" to "lib" at the 
+first level only where blib exists, mainly for use
+in testing.
 
 1.64
 
