@@ -54,30 +54,39 @@ BEGIN
     # cannot handle the rooted system being linked
     # back to itself.
 
-    use Cwd qw( &abs_path &cwd );
+    use Cwd qw( &cwd );
 
-    unless( eval {abs_path '//';  abs_path cwd } )
+    my $abs = Cwd->can( 'abs_path'  )
+    or die "Odd: Cwd cannot 'abs_path'\n";
+
+    if
+    (
+        eval { $abs->( '//' );  $abs->( cwd ); 1 }
+    )
     {
-        # abs_path seems to be having problems,
-        # fix is to stub it out.
-        #
-        # undef avoids nastygram.
+    }
+    elsif
+    (
+        $abs = Cwd->can( 'rel2abs'  )
+    )
+    {
+        # ok, we have a substitute
+    }
+    else
+    {
+        die "Cwd fails abs_path test && lacks 'rel2abs'\n";
+    }
 
-        my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
+    my $ref = *{ qualify_to_ref 'abs_path', __PACKAGE__ };
 
-        my $sub = File::Spec::Functions->can( 'rel2abs' );
-
-        undef &{ $ref };
-
-        *$ref = $sub
-    };
+    *{ $ref } = $abs;
 }
 
 ########################################################################
 # package variables 
 ########################################################################
 
-our $VERSION = v1.63;
+our $VERSION = v1.64.1;
 
 my %defaultz = 
 (
@@ -226,15 +235,15 @@ my $handle_args
         my ( $k, $v ) = split '=', $_, 2;
 
         defined $v
-        or
-        first{ $k eq $_ } @use_undef 
         or 
-        $v //= 1;
+        first { $_ eq $k } @use_undef 
+        or 
+        $v  //= 1;
 
         # "no" inverts the sense of the test.
 
-        $k =~ s{^no}{}
-        and $v  = ! $v;
+        index $k, 'no'
+        or $v  = ! $v;
 
         ( $k => $v )
     }

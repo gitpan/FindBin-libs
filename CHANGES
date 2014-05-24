@@ -1,4 +1,16 @@
 
+1.9     Sat May 24 09:15:15 CDT 2014
+
+Minor cleanup in handling abs_path replacement.
+Seems to work for people with original issue so this one goes
+on CPAN.
+
+
+1.8.1   Sun Mar 23 14:29:44 CDT 2014
+
+Assign local abs_path rather than shuffle the symbol table after using Cwd.
+Avoids issues with munging symbol table in Cwd itself.
+
 1.8 Tue May 28 21:04:30 CDT 2013
 
 Update to work with v5.18
@@ -15,8 +27,6 @@ for patches).
 1.65.1 Sat Dec 22 22:47:55 CST 2012
 
 Pod Errors.
-
-
 
 1.65
 

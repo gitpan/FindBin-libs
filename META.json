@@ -4,7 +4,7 @@
       "Steven Lembark <lembark@wrkhors.com"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4003, CPAN::Meta::Converter version 2.130880",
+   "generated_by" : "Module::Build version 0.4005, CPAN::Meta::Converter version 2.141170",
    "license" : [
       "perl_5"
    ],
@@ -16,7 +16,7 @@
    "prereqs" : {
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.4003"
+            "Module::Build" : "0.4005"
          }
       },
       "runtime" : {
@@ -36,7 +36,7 @@
    "provides" : {
       "FindBin::libs" : {
          "file" : "lib/FindBin/libs_curr.pm",
-         "version" : "v1.63.0"
+         "version" : "v1.64.1"
       }
    },
    "release_status" : "stable",
@@ -45,5 +45,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "1.8"
+   "version" : "1.9"
 }
