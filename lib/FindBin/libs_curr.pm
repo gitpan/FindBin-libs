@@ -19,7 +19,7 @@
 
 package FindBin::libs;
 
-use v5.10;
+use v5.14;
 use strict;
 
 use FindBin;
@@ -64,20 +64,23 @@ BEGIN
         eval { $abs->( '//' );  $abs->( cwd ); 1 }
     )
     {
+        # nothing more to do: abs_path works.
     }
     elsif
     (
-        $abs = Cwd->can( 'rel2abs'  )
+        $abs = File::Spec::Functions->can( 'rel2abs'  )
     )
     {
         # ok, we have a substitute
     }
     else
     {
-        die "Cwd fails abs_path test && lacks 'rel2abs'\n";
+        die "Non-working abs_path without 'rel2abs'\n";
     }
 
     my $ref = *{ qualify_to_ref 'abs_path', __PACKAGE__ };
+
+    undef &{ *$ref };
 
     *{ $ref } = $abs;
 }
@@ -86,7 +89,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = v1.64.1;
+our $VERSION = v1.64.2;
 
 my %defaultz = 
 (

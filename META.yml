@@ -1,21 +1,22 @@
 ---
-abstract: "FindBin::libs - locate and a 'use lib' or export \ndirectories based on .\n"
+abstract: "locate and a 'use lib' or export  directories based on $FindBin::Bin."
 author:
-  - 'Steven Lembark <lembark@wrkhors.com'
-build_requires: {}
+  - unknown
+build_requires:
+  ExtUtils::MakeMaker: '0'
 configure_requires:
-  Module::Build: '0.4005'
+  ExtUtils::MakeMaker: '0'
 dynamic_config: 1
-generated_by: 'Module::Build version 0.4005, CPAN::Meta::Converter version 2.141170'
-license: perl
+generated_by: 'ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.141170'
+license: unknown
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: '1.4'
 name: FindBin-libs
-provides:
-  FindBin::libs:
-    file: lib/FindBin/libs_curr.pm
-    version: v1.64.1
+no_index:
+  directory:
+    - t
+    - inc
 requires:
   Carp: '0'
   Cwd: '0'
@@ -26,6 +27,4 @@ requires:
   Symbol: '0'
   Test::More: '0'
   strict: '0'
-resources:
-  license: http://dev.perl.org/licenses/
-version: '1.9'
+version: '1.10'

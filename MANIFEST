@@ -1,10 +1,11 @@
 README
 CHANGES
 MANIFEST
-Build.PL
-lib/FindBin/libs_5_8.pm
+Makefile.PL
+lib/FindBin/libs_old.pm
 lib/FindBin/libs_curr.pm
 example/p5run
+t/00-cwd-sanity.t
 t/01-use-ok.t
 t/02-export-base.t
 t/04-export-nouse-base.t

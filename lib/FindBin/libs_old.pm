@@ -57,25 +57,35 @@ BEGIN
     # cannot handle the rooted system being linked
     # back to itself.
 
-    use Cwd qw( &abs_path &cwd );
+    use Cwd qw( &cwd );
 
-    unless( eval {abs_path '//';  abs_path cwd } )
+    my $abs = Cwd->can( 'abs_path'  )
+    or die "Odd: Cwd cannot 'abs_path'\n";
+
+    if
+    (
+        eval { $abs->( '//' );  $abs->( cwd ); 1 }
+    )
     {
-        # abs_path seems to be having problems,
-        # fix is to stub it out. ref and sub are
-        # syntatic sugar, but do you really want
-        # to see it all on one line???
-        #
-        # undef avoids re-defining subroutine nastygram.
+        # nothing more to do: abs_path works.
+    }
+    elsif
+    (
+        $abs = File::Spec::Functions->can( 'rel2abs'  )
+    )
+    {
+        # ok, we have a substitute
+    }
+    else
+    {
+        die "Cwd fails abs_path test && lacks 'rel2abs'\n";
+    }
 
-        my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
+    my $ref = *{ qualify_to_ref 'abs_path', __PACKAGE__ };
 
-        my $sub = File::Spec::Functions->can( 'rel2abs' );
+    undef &{ *$ref };
 
-        undef &{ $ref };
-
-        *$ref = $sub
-    };
+    *{ $ref } = $abs;
 }
 
 ########################################################################

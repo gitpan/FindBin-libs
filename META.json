@@ -1,22 +1,33 @@
 {
-   "abstract" : "FindBin::libs - locate and a 'use lib' or export \ndirectories based on .\n",
+   "abstract" : "locate and a 'use lib' or export  directories based on $FindBin::Bin.",
    "author" : [
-      "Steven Lembark <lembark@wrkhors.com"
+      "unknown"
    ],
    "dynamic_config" : 1,
-   "generated_by" : "Module::Build version 0.4005, CPAN::Meta::Converter version 2.141170",
+   "generated_by" : "ExtUtils::MakeMaker version 6.98, CPAN::Meta::Converter version 2.141170",
    "license" : [
-      "perl_5"
+      "unknown"
    ],
    "meta-spec" : {
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
    "name" : "FindBin-libs",
+   "no_index" : {
+      "directory" : [
+         "t",
+         "inc"
+      ]
+   },
    "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "0"
+         }
+      },
       "configure" : {
          "requires" : {
-            "Module::Build" : "0.4005"
+            "ExtUtils::MakeMaker" : "0"
          }
       },
       "runtime" : {
@@ -33,17 +44,6 @@
          }
       }
    },
-   "provides" : {
-      "FindBin::libs" : {
-         "file" : "lib/FindBin/libs_curr.pm",
-         "version" : "v1.64.1"
-      }
-   },
    "release_status" : "stable",
-   "resources" : {
-      "license" : [
-         "http://dev.perl.org/licenses/"
-      ]
-   },
-   "version" : "1.9"
+   "version" : "1.10"
 }
