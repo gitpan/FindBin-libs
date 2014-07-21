@@ -1,5 +1,5 @@
 
-1.10   Wed Jul  2 22:34:00 CDT 2014
+1.11   Wed Jul  2 22:34:00 CDT 2014
 
 R.I.P. Build.PL.
 see Makefile.PL
@@ -11,13 +11,9 @@ Add test for abs_path or rel2abs surviving both '//' and 'cwd' --
 if neither of them is available or working the rest of this is
 a waste.
 
-ONE BIG FAVOR:
+Note: I don't have access to windows for testing. If any of this
+fails please contact me and we can figure out what is wrong.
 
-IF ANYONE USING THIS HAS ACCESS TO WINDOWS PLEASE SEND BACK ANY
-FAILING TEST RESULTS.
-
-I don't have any way to test this on windows. So far as I can tell
-locally this works on supported versions of Perl w/ *NIX.
 
 1.9.1   Tue May 27 08:20:41 CDT 2014
 
