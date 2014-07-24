@@ -24,7 +24,7 @@ link $path => $dest;
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION         => '1.11',
+    VERSION         => '2.00',
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {

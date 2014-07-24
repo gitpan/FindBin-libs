@@ -27,4 +27,4 @@ requires:
   Symbol: '0'
   Test::More: '0'
   strict: '0'
-version: '1.11'
+version: '2.00'

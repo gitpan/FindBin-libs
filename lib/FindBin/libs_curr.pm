@@ -89,7 +89,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = v1.64.2;
+our $VERSION = v2.0.0;
 
 my %defaultz = 
 (
@@ -673,7 +673,7 @@ having to modify a single line of code.
 Say your sandbox is in ./sandbox and you are currently
 working in ./sandbox/projects/package/bin on a perl
 executable. You may have some number of modules that
-are specific -- or customized -- for this pacakge, 
+are specific -- or customized -- for this package, 
 share some modules within the project, and may want 
 to use company-wide modules that are managed out of 
 ./sandbox in development. All of this lives under a 

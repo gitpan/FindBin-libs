@@ -1,4 +1,15 @@
 
+2.00    Thu Jul 24 12:53:53 CDT 2014
+
+Version numbers now come from the current build rather than Makefile.PL.
+Upping the version to 2.00 makes it easier to keep track of it all.
+Makefile uses stringy, .pm uses v-string.
+Hopefully that will keep everyone happy.
+
+
+Finally remembered to fix typo (thanks to x.guimard).
+
+
 1.11   Wed Jul  2 22:34:00 CDT 2014
 
 R.I.P. Build.PL.
