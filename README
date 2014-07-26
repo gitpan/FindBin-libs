@@ -18,10 +18,10 @@ optional parameters (e.g., qw(export) and qw(export=foo)).
 
 Installation:
 
-    perl Build.PL;
-    ./Build build;
-    ./Build test;
-    ./Build install;
+    perl Makefile.PL;
+    make all test install;
     perldoc FindBin::libs;
+
+also see the examples for come common use cases.
 
 enjoi

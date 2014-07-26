@@ -4,8 +4,8 @@ use ExtUtils::MakeMaker;
 
 use 5.008;
 
-my $stub	= 'lib/FindBin/libs';
-my $dest	= $stub . '.pm';
+my $stub    = 'lib/FindBin/libs';
+my $dest    = $stub . '.pm';
 
 my $path
 = ref $^V && v5.10 le $^V 
@@ -24,7 +24,7 @@ link $path => $dest;
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION         => '2.00',
+    VERSION         => "2.01",
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {
@@ -43,7 +43,7 @@ WriteMakefile
             File::Temp      0
             List::Util      0
             Test::More      0
-		)
+        )
     },
 );
 

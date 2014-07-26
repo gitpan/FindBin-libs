@@ -89,7 +89,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = v2.0.0;
+our $VERSION = v2.0;
 
 my %defaultz = 
 (
@@ -170,6 +170,7 @@ my $find_libs
 
     my @libz    = ();
 
+    PATH:
     for( 1 .. @dirpath )
     {
         # note that catpath is extraneous on *NIX; the 
@@ -204,6 +205,8 @@ my $find_libs
                 $found{ $dir } = ();
 
                 push @libz, $dir;
+
+                last PATH if $argz{ scalar };
             }
         }
 
@@ -217,7 +220,9 @@ my $find_libs
     # passing it back as a list isn't all that
     # painful for a few paths.
 
-    wantarray ? @libz : \@libz
+    wantarray 
+    ?  @libz 
+    : \@libz
 };
 
 # break out the messy part into a separate block.
@@ -262,15 +267,15 @@ my $handle_args
 
     if( exists $argz{ use } )
     {
-    # nothing further to do
+        # nothing further to do
     }
     elsif( defined $argz{ export } || defined $argz{ p5lib } )
     {
-    $argz{ use } = undef;
+        $argz{ use } = undef;
     }
     else
     {
-    $argz{ use } = 1;
+        $argz{ use } = 1;
     }
 
     local $defaultz{ Bin }
@@ -287,16 +292,16 @@ my $handle_args
 
     while( my($k,$v) = each %defaultz )
     {
-    # //= doesn't work here since undef may be a 
-    # legit default.
+        # //= doesn't work here since undef may be a 
+        # legit default.
 
-    exists $argz{ $k }
-    or
-    $argz{ $k } = $v;
+        exists $argz{ $k }
+        or
+        $argz{ $k } = $v;
     }
 
     exists $argz{ base } && $argz{ base } 
-    or croak "Bogus FindBin::libs: missing/false base argument, should be 'base=NAME'";
+    or croak "Bogus FindBin::libs: false base argument, should be 'base=NAME'";
 
     exists $argz{ export }
     and
@@ -342,8 +347,10 @@ sub import
     # just dodges -T. putting this down here instead
     # of inside find_libs allows people to use saner
     # untainting plans via find_libs.
+    #
+    # "s" allows directories to contain newlines. 
 
-    @libz   = map { m{ (.+) }x } @libz;
+    @libz   = map { m{ (.+) }xs } @libz;
 
     my $caller = caller;
 
@@ -361,13 +368,24 @@ sub import
         my $dest    = qualify        $argz{ export }, $caller;
         my $ref     = qualify_to_ref $dest;
 
-        print STDERR "\nExporting: \@$dest\n"
-        if $verbose;
+        if( $verbose )
+        {
+            $argz{ scalar }
+            ? print STDERR "\nExporting: \$$dest\n"
+            : print STDERR "\nExporting: \@$dest\n"
+        }
 
         # Symbol this is cleaner than "no strict" 
         # for installing the array.
 
-        *$ref = \@libz;
+        if( $argz{ scalar } )
+        {
+            *$ref = \$libz[0];
+        }
+        else
+        {
+            *$ref = \@libz;
+        }
     }
 
     if( defined $argz{ p5lib } )
@@ -503,6 +521,11 @@ Perl v5.10+.
     use FindBin::libs qw( export=junk  base=frobnicatorium                  );
     use FindBin::libs qw( export       base=foobar                          );
 
+    # avoid dealing with an array by taking the first one found.
+    # in this case $etc (rather than @etc).
+
+    use FindBin::libs qw( export=etc scalar base=etc ).
+
 =head1 DESCRIPTION
 
 =head2 General Use
@@ -538,9 +561,10 @@ will search for directories named "altlib" and "use lib" them.
 
 =head3 Exporting a variable: 'export'
 
-The 'export' option will push an array of the directories found
-and takes an optional argument of the array name, which defaults 
-to the basename searched for:
+The 'export' option will usually (see "scalar", below) 
+push an array of the directories found and takes an 
+optional argument of the array name, which defaults to the 
+basename searched for:
 
     use FindBin::libs qw( export );
 
@@ -578,6 +602,18 @@ The use and export switches are not exclusive:
 
 will locate "lib" directories, use lib them, and export 
 @mylibs into the caller's package. 
+
+There are times when looking down multiple entries is annoying
+becuase only the first one is useful. In this case the "scalar"
+argument reduces an array to the first value. The most common
+example of this is looking for configuration files in the 
+"nearest" ./etc directory.
+
+For example:
+
+    use FindBin::libs qw( base=etc export=config scalar ); 
+
+will export the first ./etc path it finds into $config.
 
 =head3 Subdirectories
 

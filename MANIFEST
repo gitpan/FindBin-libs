@@ -1,10 +1,14 @@
-README
-CHANGES
-MANIFEST
-Makefile.PL
-lib/FindBin/libs_old.pm
-lib/FindBin/libs_curr.pm
+Changes
+example/multi_config_dir
 example/p5run
+example/single_config_dir
+lib/FindBin/libs_curr.pm
+lib/FindBin/libs_old.pm
+Makefile.PL
+MANIFEST
+META.json
+META.yml
+README
 t/00-cwd-sanity.t
 t/01-use-ok.t
 t/02-export-base.t
@@ -13,5 +17,4 @@ t/05-export-subdir.t
 t/06-base-subdir-subonly.t
 t/07-export-subdir-subonly.t
 t/08-base-subdir-subonly.t
-META.yml
-META.json
+t/09-base-subdir-scalar.t
