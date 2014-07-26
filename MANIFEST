@@ -2,6 +2,7 @@ Changes
 example/multi_config_dir
 example/p5run
 example/single_config_dir
+lib/FindBin/libs.pm
 lib/FindBin/libs_curr.pm
 lib/FindBin/libs_old.pm
 Makefile.PL

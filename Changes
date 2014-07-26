@@ -1,5 +1,5 @@
 
-v2.01    Sat Jul 26 01:52:46 CDT 2014
+2.01    Sat Jul 26 01:52:46 CDT 2014
 
 Version numbers now come from the current build rather than Makefile.PL.
 Upping the version to v2.00 makes it easier to keep track of it all.

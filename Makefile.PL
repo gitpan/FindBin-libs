@@ -1,8 +1,10 @@
-use ExtUtils::MakeMaker;
-
 # even the old version is guaranteed not to work with anything earlier.
 
 use 5.008;
+use strict;
+
+use ExtUtils::MakeMaker;
+
 
 my $stub    = 'lib/FindBin/libs';
 my $dest    = $stub . '.pm';
@@ -24,7 +26,7 @@ link $path => $dest;
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION         => "2.01",
+    VERSION         => 2.02,
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {
