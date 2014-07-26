@@ -1,5 +1,7 @@
 # even the old version is guaranteed not to work with anything earlier.
 
+package FindBin::libs;
+
 use 5.008;
 use strict;
 
@@ -22,11 +24,14 @@ link $path => $dest;
 
 [ -e $dest ] || die "Failed link: '$dest' ($!)";
 
+my $version	= '2.03';
+$version	= eval $version;
+
 
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION         => 2.02,
+    VERSION         => $version,
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {
