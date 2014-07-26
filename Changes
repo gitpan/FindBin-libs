@@ -26,6 +26,10 @@ to export $config rather than an array.
 
 Added some examples.
 
+Replace given block to avoid nastygrams from post-5.16 perls.
+
+Add stub libs.pm as placeholder for version.
+
 Finally remembered to fix typo (thanks to x.guimard).
 
 

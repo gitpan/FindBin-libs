@@ -19,7 +19,7 @@
 
 package FindBin::libs;
 
-use v5.14;
+use v5.10;
 use strict;
 
 use FindBin;
@@ -27,9 +27,8 @@ use Symbol;
 
 use File::Basename;
 
-use Carp        qw( croak           );
-use List::Util  qw( first           );
-use Symbol      qw( qualify_to_ref  );
+use Carp    qw( croak           );
+use Symbol  qw( qualify_to_ref  );
 
 use File::Spec::Functions
 qw
@@ -54,42 +53,35 @@ BEGIN
     # cannot handle the rooted system being linked
     # back to itself.
 
-    use Cwd qw( &cwd );
+    use Cwd qw( &abs_path &cwd );
 
-    my $abs = Cwd->can( 'abs_path'  )
-    or die "Odd: Cwd cannot 'abs_path'\n";
-
-    if
-    (
-        eval { $abs->( '//' );  $abs->( cwd ); 1 }
-    )
+    unless( eval {abs_path '//';  abs_path cwd } )
     {
-        # nothing more to do: abs_path works.
-    }
-    elsif
-    (
-        $abs = File::Spec::Functions->can( 'rel2abs'  )
-    )
-    {
-        # ok, we have a substitute
-    }
-    else
-    {
-        die "Non-working abs_path without 'rel2abs'\n";
-    }
+        # abs_path seems to be having problems,
+        # fix is to stub it out.
+        #
+        # undef avoids nastygram.
 
-    my $ref = *{ qualify_to_ref 'abs_path', __PACKAGE__ };
+        my $ref = qualify_to_ref 'abs_path', __PACKAGE__;
 
-    undef &{ *$ref };
+        my $sub = File::Spec::Functions->can( 'rel2abs' );
 
-    *{ $ref } = $abs;
+        undef &{ $ref };
+
+        *$ref = $sub
+    };
 }
 
 ########################################################################
 # package variables 
 ########################################################################
 
-our $VERSION = v2.0;
+our $VERSION
+= do
+{
+    my $v   = '2.01';
+    eval $v
+};
 
 my %defaultz = 
 (
@@ -109,8 +101,6 @@ my %defaultz =
 
     ignore => '/,/usr', # dir's to skip looking for ./lib
 );
-
-my @use_undef = qw( export ignore );
 
 # only new directories are used, ignore pre-loads
 # this with unwanted values.
@@ -206,7 +196,7 @@ my $find_libs
 
                 push @libz, $dir;
 
-                last PATH if $argz{ scalar };
+                last if $argz{ scalar };
             }
         }
 
@@ -220,9 +210,7 @@ my $find_libs
     # passing it back as a list isn't all that
     # painful for a few paths.
 
-    wantarray 
-    ?  @libz 
-    : \@libz
+    wantarray ? @libz : \@libz
 };
 
 # break out the messy part into a separate block.
@@ -240,18 +228,25 @@ my $handle_args
     %argz
     = map
     {
+        my $use_undef
+        = do
+        {
+            my %a   = ();
+            @a{ qw( export ignore ) } = ();
+            \%a
+        };
+
         my ( $k, $v ) = split '=', $_, 2;
 
-        defined $v
-        or 
-        first { $_ eq $k } @use_undef 
-        or 
-        $v  //= 1;
+        # leave $v undef?
+
+        exists $use_undef->{ $k }
+        or $v //= 1;
 
         # "no" inverts the sense of the test.
 
-        index $k, 'no'
-        or $v  = ! $v;
+        $k =~ s{^no}{}
+        and $v  = ! $v;
 
         ( $k => $v )
     }
@@ -267,15 +262,15 @@ my $handle_args
 
     if( exists $argz{ use } )
     {
-        # nothing further to do
+    # nothing further to do
     }
     elsif( defined $argz{ export } || defined $argz{ p5lib } )
     {
-        $argz{ use } = undef;
+    $argz{ use } = undef;
     }
     else
     {
-        $argz{ use } = 1;
+    $argz{ use } = 1;
     }
 
     local $defaultz{ Bin }
@@ -301,7 +296,7 @@ my $handle_args
     }
 
     exists $argz{ base } && $argz{ base } 
-    or croak "Bogus FindBin::libs: false base argument, should be 'base=NAME'";
+    or croak "Bogus FindBin::libs: missing/false base argument, should be 'base=NAME'";
 
     exists $argz{ export }
     and
@@ -347,8 +342,6 @@ sub import
     # just dodges -T. putting this down here instead
     # of inside find_libs allows people to use saner
     # untainting plans via find_libs.
-    #
-    # "s" allows directories to contain newlines. 
 
     @libz   = map { m{ (.+) }xs } @libz;
 
@@ -365,27 +358,22 @@ sub import
 
     if( $argz{ export } )
     {
-        my $dest    = qualify        $argz{ export }, $caller;
-        my $ref     = qualify_to_ref $dest;
+        my $ref     = qualify_to_ref $argz{ export }, $caller;
 
         if( $verbose )
         {
+            my $dest    = qualify $argz{ export }, $caller;
+
             $argz{ scalar }
             ? print STDERR "\nExporting: \$$dest\n"
             : print STDERR "\nExporting: \@$dest\n"
+            ;
         }
 
-        # Symbol this is cleaner than "no strict" 
-        # for installing the array.
-
-        if( $argz{ scalar } )
-        {
-            *$ref = \$libz[0];
-        }
-        else
-        {
-            *$ref = \@libz;
-        }
+        $argz{ scalar }
+        ? *$ref = \$libz[0]
+        : *$ref = \@libz;
+        ;
     }
 
     if( defined $argz{ p5lib } )
@@ -521,11 +509,6 @@ Perl v5.10+.
     use FindBin::libs qw( export=junk  base=frobnicatorium                  );
     use FindBin::libs qw( export       base=foobar                          );
 
-    # avoid dealing with an array by taking the first one found.
-    # in this case $etc (rather than @etc).
-
-    use FindBin::libs qw( export=etc scalar base=etc ).
-
 =head1 DESCRIPTION
 
 =head2 General Use
@@ -561,10 +544,9 @@ will search for directories named "altlib" and "use lib" them.
 
 =head3 Exporting a variable: 'export'
 
-The 'export' option will usually (see "scalar", below) 
-push an array of the directories found and takes an 
-optional argument of the array name, which defaults to the 
-basename searched for:
+The 'export' option will push an array of the directories found
+and takes an optional argument of the array name, which defaults 
+to the basename searched for:
 
     use FindBin::libs qw( export );
 
@@ -603,18 +585,6 @@ The use and export switches are not exclusive:
 will locate "lib" directories, use lib them, and export 
 @mylibs into the caller's package. 
 
-There are times when looking down multiple entries is annoying
-becuase only the first one is useful. In this case the "scalar"
-argument reduces an array to the first value. The most common
-example of this is looking for configuration files in the 
-"nearest" ./etc directory.
-
-For example:
-
-    use FindBin::libs qw( base=etc export=config scalar ); 
-
-will export the first ./etc path it finds into $config.
-
 =head3 Subdirectories
 
 The "subdir" and "subonly" settings will add or 
@@ -628,7 +598,7 @@ for configuring packages:
 
     use FindBin::libs qw( export base=config subonly=mypackage );
 
-Will leave @config with any "mypackage" holding
+Will leave @config with any "mypacakge" holding
 any "mypackage" subdir's.
 
 =head3 Setting PERL5LIB: p5lib
@@ -709,7 +679,7 @@ having to modify a single line of code.
 Say your sandbox is in ./sandbox and you are currently
 working in ./sandbox/projects/package/bin on a perl
 executable. You may have some number of modules that
-are specific -- or customized -- for this package, 
+are specific -- or customized -- for this pacakge, 
 share some modules within the project, and may want 
 to use company-wide modules that are managed out of 
 ./sandbox in development. All of this lives under a 
