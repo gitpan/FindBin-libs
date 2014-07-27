@@ -22,13 +22,10 @@ link $path => $dest;
 
 [ -e $dest ] || die "Failed link: '$dest' ($!)";
 
-my $v	= '2.06';
-$v		= eval $v;
-
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION			=> $v,
+    VERSION			=> 2.07,
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {

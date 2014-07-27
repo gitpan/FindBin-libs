@@ -1,5 +1,5 @@
 ---
-abstract: unknown
+abstract: "locate and a 'use lib' or export  directories based on $FindBin::Bin."
 author:
   - unknown
 build_requires:
@@ -27,4 +27,4 @@ requires:
   Symbol: '0'
   Test::More: '0'
   strict: '0'
-version: '2.06'
+version: '2.07'

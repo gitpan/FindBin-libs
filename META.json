@@ -1,5 +1,5 @@
 {
-   "abstract" : "unknown",
+   "abstract" : "locate and a 'use lib' or export  directories based on $FindBin::Bin.",
    "author" : [
       "unknown"
    ],
@@ -45,5 +45,5 @@
       }
    },
    "release_status" : "stable",
-   "version" : "2.06"
+   "version" : "2.07"
 }
