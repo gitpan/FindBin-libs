@@ -26,7 +26,7 @@ BEGIN
 
 END
 {
-    -e './foobar' && unlink './foobar';
+    unlink './foobar';
 }
 
 use FindBin::libs qw( export                            );

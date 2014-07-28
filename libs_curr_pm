@@ -76,12 +76,8 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION
-= do
-{
-    my $v   = '2.01';
-    eval $v
-};
+our $VERSION = '2.08';
+$VERSION = eval $VERSION;
 
 my %defaultz = 
 (

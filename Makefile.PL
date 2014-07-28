@@ -1,31 +1,32 @@
-# even the old version is guaranteed not to work with anything earlier.
+# even the old version is guaranteed not to work 
+# with anything earlier than 5.008.
 
 use 5.008;
 use strict;
 
 use ExtUtils::MakeMaker;
 
+my $dest    = 'lib/FindBin/libs.pm';
 
-my $stub    = 'lib/FindBin/libs';
-my $dest    = $stub . '.pm';
-
-my $path
+my $from 
 = ref $^V && v5.10 le $^V 
-? $stub . '_curr.pm'
-: $stub . '_old.pm'
+? 'libs_curr_pm'
+: 'libs_old_pm'
 ;
 
 -e $dest && unlink $dest;
 -e $dest && die "Failed unlink: '$dest' ($!)"; 
 
-link $path => $dest;
+link $from => $dest;
 
 [ -e $dest ] || die "Failed link: '$dest' ($!)";
+
+print STDOUT "Installing: '$from' ($dest)\n";
 
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION			=> 2.07,
+    VERSION_FROM	=> 'libs_curr_pm',
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {
