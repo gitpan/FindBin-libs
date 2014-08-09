@@ -92,8 +92,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '1.62';
-$VERSION = eval $VERSION;
+our $VERSION = v1.63;
 
 my %defaultz = 
 (
@@ -201,6 +200,8 @@ my $find_libs
                 $found{ $dir } = 1;
 
                 push @libz, $dir;
+
+                last if $argz{ scalar };
             }
         }
 
@@ -215,7 +216,7 @@ my $find_libs
     # painful for a few paths.
 
     wantarray ? @libz : \@libz
-};;
+};
 
 # break out the messy part into a separate block.
 
@@ -242,7 +243,7 @@ my $handle_args
 
     # stuff "debug=1" into your arguments and perl -d will stop here.
 
-    $DB::single = 1 if defined $argz{debug};
+    $DB::single = 1 if defined $argz{ debug };
 
     # default if nothing is supplied is to use the result;
     # otherwise, without use supplied either of export or
@@ -346,7 +347,10 @@ sub import
 
         my $ref = qualify_to_ref $argz{ export }, $caller;
 
-        *$ref = \@libz;
+        exists $argz{ scalar }
+        ? *$ref = \$libz[0]
+        : *$ref = \@libz
+        ;
     }
 
     if( defined $argz{ p5lib } )
@@ -654,7 +658,7 @@ having to modify a single line of code.
 Say your sandbox is in ./sandbox and you are currently
 working in ./sandbox/projects/package/bin on a perl
 executable. You may have some number of modules that
-are specific -- or customized -- for this package, 
+are specific -- or customized -- for this pacakge, 
 share some modules within the project, and may want 
 to use company-wide modules that are managed out of 
 ./sandbox in development. All of this lives under a 

@@ -76,7 +76,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '2.08';
+our $VERSION = '2.09';
 $VERSION = eval $VERSION;
 
 my %defaultz = 

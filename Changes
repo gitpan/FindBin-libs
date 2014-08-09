@@ -1,3 +1,7 @@
+2.09    Sat Aug  9 14:43:10 CDT 2014
+
+Fix bug in handling of scalar arg in old (5.10 or older) module.
+Whitespace & POD cleanups.
 
 2.07    Mon Jul 28 02:48:49 CDT 2014
 
