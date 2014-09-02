@@ -30,6 +30,6 @@ my $expect  = catpath '' => qw( blib blort );
 my $value   = ${ *$ref };
 
 ok $value, "Exported scalar '\$snark'";
-like $value, qr{ \Q$expect\E $}x, "Found 'blib/blort' ($value)";
+like $value, qr{\Q$expect\E $}x, "Found 'blib/blort' ($value)";
 
 __END__

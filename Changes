@@ -1,7 +1,63 @@
-2.09    Sat Aug  9 14:43:10 CDT 2014
+2.11    Tue Sep  2 13:28:18 CDT 2014
 
-Fix bug in handling of scalar arg in old (5.10 or older) module.
-Whitespace & POD cleanups.
+"append" causes appends array exports from multiple searches using the 
+same variable to append (vs. overwrite) their values. default is old 
+behavior (i.e., "noappend" which overwrites).
+
+e.g., from t/10*t:
+
+    FindBin::libs->import
+    (
+        qw
+        (
+            base=foo
+            subdir=etc
+            subonly
+            export=etc
+            append
+        )
+    );
+    FindBin::libs->import
+    (
+        qw
+        (
+            base=bar
+            subdir=etc
+            subonly
+            export=etc
+            append
+        )
+    );
+
+generates:
+
+    # Second pass looks for bar/etc:[
+    #   '/sandbox/lembark/Modules/FindBin-libs/foo/etc',
+    #   '/sandbox/lembark/Modules/FindBin-libs/bar/etc'
+    # ]
+
+
+Main use is finding, say, multiple ./etc dir's and exporting
+them all into a search list for config files. 
+
+Given:
+
+    ./myproj/etc
+    ./shared/etc
+
+then #! code in ./myproj/bin could:
+
+    use FindBin::libs qw( export base=etc                       );    
+    use FindBin::libs qw( export base=shared subdir=etc subonly );
+
+and get @etc of ( .../myproj/etc, .../shared/etc ). 
+
+The old behavior, 'noappend' overwrites the variable (which can be
+handy for re-setting the dirs also).
+
+2.10    Tue Sep  2 10:30:12 CDT 2014
+
+"scalar" seems to work; update POD so that people know to use it.
 
 2.07    Mon Jul 28 02:48:49 CDT 2014
 

@@ -23,10 +23,13 @@ link $from => $dest;
 
 print STDOUT "Installing: '$from' ($dest)\n";
 
+our $VERSION = '2.11';
+$VERSION = eval $VERSION;
+
 WriteMakefile
 (
     NAME            => 'FindBin::libs',
-    VERSION_FROM	=> 'libs_curr_pm',
+    VERSION			=> $VERSION,
     ABSTRACT_FROM   => $dest,
     PREREQ_PM       =>
     {

@@ -23,12 +23,11 @@ use v5.10;
 use strict;
 
 use FindBin;
-use Symbol;
 
 use File::Basename;
 
-use Carp    qw( croak           );
-use Symbol  qw( qualify_to_ref  );
+use Carp    qw( croak                   );
+use Symbol  qw( qualify qualify_to_ref  );
 
 use File::Spec::Functions
 qw
@@ -76,7 +75,7 @@ BEGIN
 # package variables 
 ########################################################################
 
-our $VERSION = '2.09';
+our $VERSION = '2.10';
 $VERSION = eval $VERSION;
 
 my %defaultz = 
@@ -88,6 +87,7 @@ my %defaultz =
     subdir  => '',      # add this subdir also if found.
     subonly => undef,   # leave out lib's, use only subdir.
     export  => undef,   # push variable into caller's space.
+    append  => undef,   # push onto existing array (vs. overwrite)
     verbose => undef,   # boolean: print inputs, results.
     debug   => undef,   # boolean: set internal breakpoints.
 
@@ -234,8 +234,6 @@ my $handle_args
 
         my ( $k, $v ) = split '=', $_, 2;
 
-        # leave $v undef?
-
         exists $use_undef->{ $k }
         or $v //= 1;
 
@@ -258,15 +256,15 @@ my $handle_args
 
     if( exists $argz{ use } )
     {
-    # nothing further to do
+        # nothing further to do
     }
     elsif( defined $argz{ export } || defined $argz{ p5lib } )
     {
-    $argz{ use } = undef;
+        $argz{ use } = undef;
     }
     else
     {
-    $argz{ use } = 1;
+        $argz{ use } = 1;
     }
 
     local $defaultz{ Bin }
@@ -366,10 +364,23 @@ sub import
             ;
         }
 
-        $argz{ scalar }
-        ? *$ref = \$libz[0]
-        : *$ref = \@libz;
-        ;
+        if( $argz{ scalar } )
+        {
+            *$ref = \$libz[0]
+        }
+        elsif
+        (
+            $argz{ append } 
+            and
+            my $ary = *{ $ref }{ ARRAY }
+        )
+        {
+            push @$ary, @libz;
+        }
+        else
+        {
+            *$ref = \@libz
+        }
     }
 
     if( defined $argz{ p5lib } )
@@ -538,11 +549,24 @@ that
 
 will search for directories named "altlib" and "use lib" them.
 
-=head3 Exporting a variable: 'export'
+=head3 Exporting a variable: "export", "scalar", "append"
 
-The 'export' option will push an array of the directories found
-and takes an optional argument of the array name, which defaults 
-to the basename searched for:
+=over 4
+
+=item "export"
+
+This installs the results of locating directories into the caller's 
+space. Without any argument, export pushes out a variable named after 
+the located [sub]dir; an argument can be supplied to give the variable 
+name. Without the "scalar" option, the exported variable will be an 
+array in increasing order of "distance" (i.e., "up" the file tree); 
+with the "scalar" option only the first (i.e., "nearest") path is 
+exported.
+
+If "export" is given then "nouse" is assumed; using both leaves the 
+variable exported and its contents handed to "use lib".
+
+For example:
 
     use FindBin::libs qw( export );
 
@@ -572,7 +596,7 @@ exports @meta while
 
     use FindBin::libs qw( export=metadirs base=meta );
 
-exports @metadirs.
+exports @metadirs as a list of paths ending in "/meta".
 
 The use and export switches are not exclusive:
 
@@ -581,21 +605,88 @@ The use and export switches are not exclusive:
 will locate "lib" directories, use lib them, and export 
 @mylibs into the caller's package. 
 
+=item "scalar"
+
+Only searches for the first directory, which is exported (or
+overwritten) as a scalar rather than array. For example, if
+a project directory has ./bin and ./etc dir's then #! code in
+bin with
+
+    use FindBin::libs qw( export scalar base=etc );
+
+will have an $etc variable with the absolute path to ./bin/../etc.
+For configuration varibles this is usually what you want and allows
+for "$etc/Foo.conf" rather than "$etc[0]/Foo.conf".
+
+=item "append"
+
+Sometimes it's simpler to accumulate multiple searches into a 
+single array. Say for ./etc dir's in collection of standard
+locations.
+
+In that case:
+
+    use FindBin::libs qw( export=etc base=foo subdir=etc );
+    use FindBin::libs qw( export=etc base=bar subdir=etc append );
+
+produces something like
+
+    (
+        /path/to/foo/etc
+        /path/to/bar/etc
+    )
+
+without append @etc will have only ./bar/etc since the array would
+be overwritten with each call to FB::l::import.
+
+=back
+
 =head3 Subdirectories
+
+=over 4
 
 The "subdir" and "subonly" settings will add or 
 exclusively use subdir's. This is useful if some
 of your lib's are in ../lib/perl5 along with 
-../lib (subdir=perl5) or all of the lib's are 
-in ../lib/perl5 (subonly=perl5).
+../lib or all of the lib's are in ../lib/perl5.
+
+These could be handled with:
+
+    use FindBin::libs;
+    use FindBin::libs qw( subdir=perl5 subonly );
+
+which uses the "lib" dir's along with any lib/perl5 dirs.
+
 
 This can also be handy for locating subdir's used
 for configuring packages:
 
     use FindBin::libs qw( export base=config subonly=mypackage );
 
-Will leave @config with any "mypacakge" holding
-any "mypackage" subdir's.
+Will leave @config containing any mypackage dir's found up
+the tree, nearest to closest.
+
+The array format is convienent for locating configuration files
+shared between projects in separate, sibling directories. For
+example given:
+
+    ./proj/Foo/etc
+    ./proj/etc
+
+with
+
+    use FindBin::libs qw( export subdir=etc subonly )
+
+will export @etc with qw( ../proj/Foo/etc ../proj/etc ) in lexical
+order by distance from the #! code. At that point
+
+    use List::Util qw( first );
+
+    my $path = first { -e "$_/Global.config" } @etc;
+
+will locate the nearest "Global.confg" file. Note that this is 
+not the same as using "scalar" since that will export 
+$etc with only ./Foo/etc. 
 
 =head3 Setting PERL5LIB: p5lib
 
@@ -625,8 +716,6 @@ to something like:
 
 This can make controlling the paths used simpler and avoid
 the use of symlinks for some testing (see examples below).
-
-Note that "p5lib" and "nouse" are proably worth 
 
 =head2 Skipping directories
 
@@ -990,6 +1079,6 @@ Steven Lembark, Workhorse Computing <lembark@wrkhors.com>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2003-2012, Steven Lembark, Workhorse Computing.
-This code is released under the same terms as Perl-5.10
+Copyright (C) 2003-2014, Steven Lembark, Workhorse Computing.
+This code is released under the same terms as Perl-5.20
 or any later version of Perl.

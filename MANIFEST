@@ -2,9 +2,9 @@ Changes
 example/multi_config_dir
 example/p5run
 example/single_config_dir
-lib/FindBin/libs.pm
 libs_curr_pm
 libs_old_pm
+lib/FindBin/libs.pm
 Makefile.PL
 MANIFEST
 META.json
